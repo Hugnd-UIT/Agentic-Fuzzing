@@ -130,7 +130,7 @@ else
         fi
     }
     trap cleanup_clone EXIT
-    if ! git clone --depth 1 --progress "${TARGET_REPOS[$TARGET]}" "$CLONE_TMP_DIR"; then
+    if ! git clone --depth 1 --recurse-submodules --shallow-submodules --progress "${TARGET_REPOS[$TARGET]}" "$CLONE_TMP_DIR"; then
         printf 'Could not clone %s. Check network access and retry; incomplete clone data will be cleaned up.\n' "$TARGET" >&2
         exit 1
     fi
