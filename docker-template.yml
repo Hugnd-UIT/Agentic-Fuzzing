@@ -22,6 +22,7 @@ services:
       - OUTPUT=/root/agentic-fuzzing/output/${REPO_BASE_NAME}
       - AFL_SKIP_CPUFREQ=1
       - UV_PROJECT_ENVIRONMENT=/root/.venv
+      - UV_LINK_MODE=copy
       - FUZZING_ENGINE=${FUZZING_ENGINE}
       - GITHUB_TOKEN=${GITHUB_TOKEN}
       - OPENAI_BASE_URL=${OPENAI_BASE_URL}
