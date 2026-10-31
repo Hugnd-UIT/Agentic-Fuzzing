@@ -1,4 +1,4 @@
-from src.tools.ToolCollection import Tool, Argument, ToolCollection, load_tool_collections
+from src.tools import Tool, Argument, ToolCollection, load_tool_collections
 from typing import Any, List, Dict, Literal, Optional
 from pydantic import BaseModel, Field
 from openai import pydantic_function_tool

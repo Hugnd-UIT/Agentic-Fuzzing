@@ -1,7 +1,7 @@
 import httpx
 from httpx_sse import connect_sse
 from typing import Any, AsyncIterable
-from src.a2a.types import (
+from ..types import (
     AgentCard,
     GetTaskRequest,
     SendTaskRequest,
@@ -20,7 +20,6 @@ from src.a2a.types import (
     SendTaskStreamingResponse,
 )
 import json
-
 
 class A2AClient:
     def __init__(self, agent_card: AgentCard = None, url: str = None):

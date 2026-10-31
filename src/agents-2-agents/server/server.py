@@ -2,7 +2,7 @@ from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from sse_starlette.sse import EventSourceResponse
 from starlette.requests import Request
-from src.a2a.types import (
+from ..types import (
     A2ARequest,
     JSONRPCResponse,
     InvalidRequestError,
@@ -20,12 +20,11 @@ from src.a2a.types import (
 from pydantic import ValidationError
 import json
 from typing import AsyncIterable, Any
-from src.a2a.server.task_manager import TaskManager
+from .task_manager import TaskManager
 
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 class A2AServer:
     def __init__(
@@ -107,7 +106,6 @@ class A2AServer:
 
     def _create_response(self, result: Any) -> JSONResponse | EventSourceResponse:
         if isinstance(result, AsyncIterable):
-
             async def event_generator(result) -> AsyncIterable[dict[str, str]]:
                 async for item in result:
                     yield {"data": item.model_dump_json(exclude_none=True)}

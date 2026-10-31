@@ -1,10 +1,10 @@
 from typing import List, Optional, Callable
-from src.a2a.client import A2ACardResolver
-from src.a2a.types import (
+from src.agents_2_agents.client import A2ACardResolver
+from src.agents_2_agents.types import (
     AgentCard
 )
-from src.agents.base_agent.agent import BaseAgent
-from src.planning.ACI import ACI
+from src.agents.agent import BaseAgent
+from src.aci.factory import ACI
 from src.utils.log import get_logger
 from .prompt import NO_COVERAGE_GUIDANCE_SYSTEM_PROMPT, SYSTEM_PROMPT
 from typing import override
@@ -12,14 +12,13 @@ from typing import List
 import logging
 from src.agents.BuilderAgent.agent import BuilderAgent
 from src.agents.HarnessAgent.agent import HarnessAgent
-from src.agents.FuzzerExecutorAgent.agent import FuzzerExecutorAgent
+from src.agents.FuzzerAgent.agent import FuzzerExecutorAgent
 from src.agents.CrashAnalyzerAgent.agent import CrashAnalyzerAgent
-from src.agents.DictionaryAgent.agent import DictionaryAgent
-from src.agents.SeedAgent.agent import SeedAgent
+from src.agents.DictionaryGeneratorAgent.agent import DictionaryAgent
+from src.agents.SeedGeneratorAgent.agent import SeedAgent
 from src.agents.CoverageAnalyzerAgent.agent import CoverageAnalyzerAgent
-from src.tools.APIToolCall import API_TOOL_CALLS
+from src.tools.api import API_TOOL_CALLS
 from src.utils.config import CONFIG
-
 
 class ManagerAgent(BaseAgent):
     logger = get_logger("Manager Agent")

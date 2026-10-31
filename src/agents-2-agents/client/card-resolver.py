@@ -1,10 +1,9 @@
 import httpx
-from src.a2a.types import (
+from ..types import (
     AgentCard,
     A2AClientJSONError,
 )
 import json
-
 
 class A2ACardResolver:
     def __init__(self, agent_card_path):

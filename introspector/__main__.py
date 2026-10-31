@@ -6,14 +6,13 @@ from typing import Any
 
 from .config import Config
 from .errors import Error
-from .reply import Reply
+from . import Reply
 from .loggers import configure_logging, get_logger
 from .output import write_json
 
 ANALYSIS_STEPS: list[tuple[str, str, type]] = [
     ("reply_full_coverage", "final-coverage.json", Reply),
 ]
-
 
 def main() -> None:
     try:
@@ -90,7 +89,6 @@ def main() -> None:
         "Analysis complete: %d/%d steps succeeded in %.2fs",
         len(results), len(ANALYSIS_STEPS), wall_duration,
     )
-
 
 if __name__ == "__main__":
     main()

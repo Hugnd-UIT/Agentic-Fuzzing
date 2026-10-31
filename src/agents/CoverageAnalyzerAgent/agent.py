@@ -1,14 +1,13 @@
 import os
 from typing import List
-from src.agents.base_agent.agent import BaseAgent
-from src.planning.ACI import ACI
+from src.agents.agent import BaseAgent
+from src.aci.factory import ACI
 from src.utils.log import get_logger
 from .prompt import SYSTEM_PROMPT
 from typing import override
-from src.tools.APIToolCall import API_TOOL_CALLS
+from src.tools.api import API_TOOL_CALLS
 from src.utils.project import get_project_coverage_guidance_dir, get_fuzzer_profile, FuzzerExecutionState
 import logging
-
 
 class CoverageAnalyzerAgent(BaseAgent):
     logger = get_logger("Coverage Analyzer Agent")

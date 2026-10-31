@@ -1,12 +1,11 @@
-from src.agents.base_agent.agent import BaseAgent
+from src.agents.agent import BaseAgent
 from src.utils.llm import ToolCall
 from src.utils.log import get_logger
 from .prompt import SYSTEM_PROMPT
 from typing import override
 from typing import List
-from src.tools.APIToolCall import API_TOOL_CALLS
+from src.tools.api import API_TOOL_CALLS
 import logging
-
 
 class BuilderAgent(BaseAgent):
     logger = get_logger("Builder Agent")

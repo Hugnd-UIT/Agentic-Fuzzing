@@ -5,17 +5,16 @@ from abc import ABC, abstractmethod
 from src.utils.config import CONFIG
 from src.memory.summarizer import AgentSummarizer
 from typing import List
-from src.planning.ACI import ACI
-from src.memory.history_processor import HistoryProcessor
+from src.aci.factory import ACI as ACIPromptFactory
+from src.memory import HistoryProcessor
 from src.utils.llm import query_llm
 from src.utils.aci import ACI, InvalidResponseFormatError
 from src.utils.log import get_logger
 from src.utils.project import PROJECT_VMS
 from src.utils.llm import ToolCall, TokenLenExceed, TokenLenWillExceed
-from src.tools.APIToolCall import API_TOOL_CALLS
-from src.planning.prompt import NEXT_ACTION_PLANNING_PROMPT, RESPONSE_FORMAT_PROMPT, FRIST_ACTION_PLANNING_PROMPT
+from src.tools.api import API_TOOL_CALLS
+from src.aci.prompt import NEXT_ACTION_PLANNING_PROMPT, RESPONSE_FORMAT_PROMPT, FRIST_ACTION_PLANNING_PROMPT
 import traceback
-
 
 class BaseAgent(ABC):
     client = OpenAI(
@@ -32,7 +31,7 @@ class BaseAgent(ABC):
     system_prompt: str = "You are a helpful assistant."
     tools: List[dict] = API_TOOL_CALLS.get_tool_calls(["exit", "bash"])
     exit_reason = "Normal Exit"
-    prompt_factory = ACI(
+    prompt_factory = ACIPromptFactory(
         agents=[]
     )
     MAX_AGENT_EPOCHS = CONFIG.LLMARGs.MAX_AGENT_EPOCHS
@@ -183,7 +182,6 @@ class BaseAgent(ABC):
                 else:
                     self.history_processor.extend_user_msg(content=observation)
             epoch += 1
-
 
         # Terminate the bash subprocess
         # self.aci.kill_process_tree(self.aci.bash_subprocess)

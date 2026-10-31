@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 load_dotenv()
-from src.tools.APIToolCall import API_TOOL_CALLS
+from src.tools.api import API_TOOL_CALLS
 from src.utils.llm import query_llm
 from openai import OpenAI
 import os
@@ -93,7 +93,6 @@ class TestLLM:
         response, tool_call, _ = query_llm(self.client, messages, tools=API_TOOL_CALLS.tool_calls, logger=logger, tool_choice="required")
         assert tool_call is not None, "The tool call should not be None"
         print(tool_call.function_call)
-
 
 if __name__ == "__main__":
     test = TestLLM()

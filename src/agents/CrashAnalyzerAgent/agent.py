@@ -1,10 +1,10 @@
-from src.agents.base_agent.agent import BaseAgent
-from src.planning.ACI import ACI
+from src.agents.agent import BaseAgent
+from src.aci.factory import ACI
 from src.utils.log import get_logger
 from .prompt import SYSTEM_PROMPT
 from typing import override
 from typing import List
-from src.tools.APIToolCall import API_TOOL_CALLS
+from src.tools.api import API_TOOL_CALLS
 import logging
 
 class CrashAnalyzerAgent(BaseAgent):
@@ -39,5 +39,3 @@ class CrashAnalyzerAgent(BaseAgent):
     @override
     def format_system_prompt(self) -> str:
         return SYSTEM_PROMPT
-
-

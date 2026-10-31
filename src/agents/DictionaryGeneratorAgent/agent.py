@@ -1,10 +1,10 @@
-from src.agents.base_agent.agent import BaseAgent
-from src.planning.ACI import ACI
+from src.agents.agent import BaseAgent
+from src.aci.factory import ACI
 from src.utils.log import get_logger
 from .prompt import SYSTEM_PROMPT
 from typing import override
 from typing import List
-from src.tools.APIToolCall import API_TOOL_CALLS
+from src.tools.api import API_TOOL_CALLS
 import logging
 from src.utils.project import get_project_cache_dir
 import os
@@ -88,3 +88,5 @@ class DictionaryAgent(BaseAgent):
             self.history_processor.extend_user_msg(content=reminder_message)
             return False
         return True
+
+DictionaryGeneratorAgent = DictionaryAgent

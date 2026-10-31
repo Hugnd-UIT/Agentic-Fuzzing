@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Union, AsyncIterable, List
-from src.a2a.types import Task
-from src.a2a.types import (
+from ..types import Task
+from ..types import (
     JSONRPCResponse,
     TaskIdParams,
     TaskQueryParams,
@@ -31,7 +31,7 @@ from src.a2a.types import (
     TaskPushNotificationConfig,
     InternalError,
 )
-from src.a2a.server.utils import new_not_implemented_error
+from .utils import new_not_implemented_error
 import asyncio
 import logging
 
@@ -73,7 +73,6 @@ class TaskManager(ABC):
         self, request: TaskResubscriptionRequest
     ) -> Union[AsyncIterable[SendTaskResponse], JSONRPCResponse]:
         pass
-
 
 class InMemoryTaskManager(TaskManager):
     def __init__(self):

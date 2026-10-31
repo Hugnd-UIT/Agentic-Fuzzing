@@ -8,7 +8,7 @@ def get_logger(name: str) -> logging.Logger:
     """
     Get the logger object.
     """
-    formatted_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    formatted_now = datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S")
     log_file = os.path.join(get_log_dir(), f"{name}_{formatted_now}.log")
     logging.basicConfig(
         level=logging.INFO,

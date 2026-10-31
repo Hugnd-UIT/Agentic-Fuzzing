@@ -1,15 +1,14 @@
-from src.agents.base_agent.agent import BaseAgent
-from src.planning.ACI import ACI
+from src.agents.agent import BaseAgent
+from src.aci.factory import ACI
 from src.utils.log import get_logger
 from .prompt import SYSTEM_PROMPT
 from typing import override
 from typing import List
 import logging
 import os
-from src.tools.APIToolCall import API_TOOL_CALLS
+from src.tools.api import API_TOOL_CALLS
 from src.utils.project import get_project_cache_dir
 import json
-
 
 class SeedAgent(BaseAgent):
     logger = get_logger("Seed Agent")
@@ -42,7 +41,6 @@ class SeedAgent(BaseAgent):
     @override
     def format_system_prompt(self) -> str:
         return SYSTEM_PROMPT
-
 
     def get_web_retrieve_progress_path(self) -> str:
         progress_file_path = os.path.join(get_project_cache_dir(), "seed_progress.json")
@@ -89,3 +87,5 @@ class SeedAgent(BaseAgent):
             self.history_processor.extend_user_msg(content=reminder_message)
             return False
         return True
+
+SeedGeneratorAgent = SeedAgent

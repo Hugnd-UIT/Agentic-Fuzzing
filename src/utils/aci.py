@@ -14,7 +14,7 @@ except ImportError:
     pty = None
 
 from src.utils.llm import ToolCall
-from src.tools.ToolCollection import TOOLs, SOURCE_TOOL_LIST
+from src.tools import TOOLs, SOURCE_TOOL_LIST
 from .config import CONFIG
 from src.utils.project import get_project_source_dir
 import shlex
@@ -505,6 +505,8 @@ class ACI:
         """
         Initialize the ACI and return a Popen object.
         """
+        if pty is None:
+            return None
         self.master_fd, self.slave_fd = pty.openpty()
         bash_subprocess = subprocess.Popen(
             ["/bin/bash"],
