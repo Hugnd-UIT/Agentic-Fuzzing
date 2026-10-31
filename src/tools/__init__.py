@@ -1,12 +1,9 @@
 import importlib.util
 from pathlib import Path
-import sys
 
 _collect_tools_path = Path(__file__).parent / "collect-tools.py"
-_spec = importlib.util.spec_from_file_location("src.tools.collect_tools", _collect_tools_path)
+_spec = importlib.util.spec_from_file_location("collect_tools", _collect_tools_path)
 _mod = importlib.util.module_from_spec(_spec)
-sys.modules["src.tools.collect_tools"] = _mod
-sys.modules["src.tools.ToolCollection"] = _mod
 _spec.loader.exec_module(_mod)
 
 Tool = getattr(_mod, "Tool")
