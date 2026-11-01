@@ -3,6 +3,7 @@ set -uo pipefail
 
 BENCHMARK_DURATION="${FUZZING_DURATION:-24h}"
 echo "Starting agentic fuzzing benchmark for $BENCHMARK_DURATION."
+git config --global --add safe.directory '*' || true
 timeout --signal=INT --kill-after=60s "$BENCHMARK_DURATION" uv run main.py
 FUZZ_EXIT_CODE=$?
 
