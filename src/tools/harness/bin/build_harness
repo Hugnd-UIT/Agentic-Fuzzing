@@ -63,8 +63,6 @@ def get_fuzz_wraper_path():
     cache_output_dir = ProjectUtils.get_project_cache_dir()
     fuzz_wrapper = os.path.join(cache_output_dir, "wrapper.cpp")
     if not os.path.exists(fuzz_wrapper):
-        fuzz_wrapper = os.path.join(cache_output_dir, "fuzz_wrapper.cpp")
-    if not os.path.exists(fuzz_wrapper):
         raise Exception(f"[!] Error: Fuzz wrapper file {fuzz_wrapper} does not exist!")
     return fuzz_wrapper
 

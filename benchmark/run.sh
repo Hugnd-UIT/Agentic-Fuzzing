@@ -25,8 +25,7 @@ declare -A TARGET_REPOS=(
     [openssl]=https://github.com/openssl/openssl.git
     [protobuf]=https://github.com/protocolbuffers/protobuf.git
     [opencv]=https://github.com/opencv/opencv.git
-    [softether]=https://github.com/SoftEtherVPN/SoftEtherVPN.git
-    [nlohmann-json]=https://github.com/nlohmann/json.git
+    [simdjson]=https://github.com/simdjson/simdjson.git
 )
 
 if [[ -t 1 && -z "${NO_COLOR+x}" && "${TERM:-}" != "dumb" ]]; then

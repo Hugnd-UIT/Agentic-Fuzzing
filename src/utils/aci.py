@@ -902,9 +902,9 @@ class ACI:
                 else:
                     argument_list.append(str(arg_value))
         command = " ".join(argument_list)
-        # if tool_call.function_call == "bash":
-        #    if self.cmd_guardrail(command):
-        #        raise ValueError(f"The command {command} is not allowed. Please check your tool call.")
+        if tool_call.function_call == "bash":
+            if self.cmd_guardrail(command):
+                raise ValueError(f"The command {command} is not allowed. Please check your tool call.")
         return command
 
     def execute_tool_calling(self, tool_call: ToolCall) -> str:

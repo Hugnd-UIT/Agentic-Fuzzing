@@ -108,9 +108,9 @@ class BaseAgent(ABC):
         self.token_warning_sent = False
 
         # Get historical summaries for the target agent
-        # historical_context = self.summarizer.format_history_for_agent(self.get_agent_name(), max_count=3)
-        # if historical_context:
-        #     input_msg = historical_context + input_msg
+        historical_context = self.summarizer.format_history_for_agent(self.get_agent_name(), max_count=3)
+        if historical_context:
+            input_msg = historical_context + input_msg
             
         epoch = 0
         observation = ""
@@ -194,7 +194,7 @@ class BaseAgent(ABC):
         if self.MAX_AGENT_EPOCHS is not None and epoch >= self.MAX_AGENT_EPOCHS:
             self.exit_reason = "The agent has reached the maximum number of epochs. End of the agent execution."
         # Generate and save summary after execution ends
-        # self.summarizer.generate_and_save_summary(agent_name=self.get_agent_name(), original_input=input_msg, exit_reason=self.exit_reason, conversation_history=self.history_processor.get_messages())
+        self.summarizer.generate_and_save_summary(agent_name=self.get_agent_name(), original_input=input_msg, exit_reason=self.exit_reason, conversation_history=self.history_processor.get_messages())
         id, hash = PROJECT_VMS.create_snapshot(self.get_agent_name())
         self.logger.info(msg=f"Snapshot created: {id} {hash}")
         return self.exit_reason

@@ -17,7 +17,7 @@ _fuzz_src_dir = "/root/src/"
 
 def get_fuzz_library_src():
     # The fuzz library source directory should contain only one directory
-    dirs = os.listdir(_fuzz_src_dir)
+    dirs = [d for d in os.listdir(_fuzz_src_dir) if os.path.isdir(os.path.join(_fuzz_src_dir, d))]
     if len(dirs) != 1:
         raise Exception(f"Fuzz library source directory {_fuzz_src_dir} should contain only one directory")
     return os.path.join(_fuzz_src_dir, dirs[0])
@@ -32,7 +32,7 @@ def copy_project_source():
     if os.path.exists(_fuzz_src_dir) and os.listdir(_fuzz_src_dir):
         return
     print("[+] Copying project source code...")
-    shutil.copytree(_src_root_dir, _fuzz_src_dir)
+    shutil.copytree(_src_root_dir, _fuzz_src_dir, dirs_exist_ok=True)
 
     print(f"[+] The target project has been copied to {_fuzz_src_dir}.\n$SRC={_fuzz_src_dir}")
 
@@ -331,10 +331,7 @@ def copy_fuzzer_wrapper_to_cache():
     """
     wrapper_file = os.path.join(_root_dir, "src", "utils", "wrapper.cpp")
     if not os.path.exists(wrapper_file):
-        wrapper_file = os.path.join(_root_dir, "src", "utils", "fuzz_wrapper.cpp")
-    if not os.path.exists(wrapper_file):
         raise Exception(f"Fuzz wrapper file {wrapper_file} does not exist")
-    shutil.copy(wrapper_file, os.path.join(get_project_cache_dir(), "fuzz_wrapper.cpp"))
     shutil.copy(wrapper_file, os.path.join(get_project_cache_dir(), "wrapper.cpp"))
 
 def get_fuzzer_stat_file() -> str:
