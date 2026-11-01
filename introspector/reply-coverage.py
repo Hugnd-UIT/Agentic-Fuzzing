@@ -15,7 +15,7 @@ class Reply:
     def __init__(self, config: Config):
         self.config = config
 
-    def _try_parse_show_overview_output(self) -> dict[str, Any] | None:
+    def _try_parse_cov_overview_output(self) -> dict[str, Any] | None:
         output_dir = self.config.output_dir
 
         # Primary: .cache/coverage/whole/llvm-cov.json
@@ -57,12 +57,12 @@ class Reply:
         marker_path = os.path.join(
             self.config.output_dir, ".cache", "coverage", "whole", "last-run.json"
         )
-        log_file_info(marker_path, "show_overview_marker")
+        log_file_info(marker_path, "cov_overview_marker")
         if not os.path.isfile(marker_path):
             raise AnalysisStepError(
                 "reply_full_coverage",
-                f"show_overview did not write run marker at {marker_path} "
-                "either show_overview is an older version without marker support, "
+                f"cov_overview did not write run marker at {marker_path} "
+                "either cov_overview is an older version without marker support, "
                 "or it exited before completing gather",
             )
         try:
@@ -71,7 +71,7 @@ class Reply:
         except (json.JSONDecodeError, OSError) as exc:
             raise AnalysisStepError(
                 "reply_full_coverage",
-                f"show_overview run marker unreadable at {marker_path}: {exc}",
+                f"cov_overview run marker unreadable at {marker_path}: {exc}",
             )
 
         # Check 1: mode
@@ -79,8 +79,8 @@ class Reply:
         if mode != "replay":
             raise AnalysisStepError(
                 "reply_full_coverage",
-                f"show_overview mode was {mode!r}, expected 'replay' "
-                "--replay flag did not propagate, or show_overview overrode it",
+                f"cov_overview mode was {mode!r}, expected 'replay' "
+                "--replay flag did not propagate, or cov_overview overrode it",
             )
 
         # Check 2: completed_at is fresh
@@ -92,14 +92,14 @@ class Reply:
         except (TypeError, ValueError) as exc:
             raise AnalysisStepError(
                 "reply_full_coverage",
-                f"show_overview marker has invalid completed_at={completed_at_str!r}: {exc}",
+                f"cov_overview marker has invalid completed_at={completed_at_str!r}: {exc}",
             )
         if completed_at < introspector_start_wall:
             raise AnalysisStepError(
                 "reply_full_coverage",
-                f"show_overview marker completed_at={completed_at.isoformat()} is "
+                f"cov_overview marker completed_at={completed_at.isoformat()} is "
                 f"BEFORE this introspector started at {introspector_start_wall.isoformat()} "
-                "show_overview did not actually re-run; it may have skipped or errored silently",
+                "cov_overview did not actually re-run; it may have skipped or errored silently",
             )
 
         # Check 3: fuzzer_count
@@ -107,18 +107,18 @@ class Reply:
         if not fuzzer_count:
             raise AnalysisStepError(
                 "reply_full_coverage",
-                "show_overview ran but fuzzer_count=0",
+                "cov_overview ran but fuzzer_count=0",
             )
 
         # Check 4: llvm-cov.json non-empty
         if not marker.get("llvm_cov_json_size"):
             raise AnalysisStepError(
                 "reply_full_coverage",
-                "show_overview ran but llvm-cov.json size is 0",
+                "cov_overview ran but llvm-cov.json size is 0",
             )
 
         logger.info(
-            "show_overview marker verified: mode=%s completed_at=%s fuzzer_count=%s llvm_cov_json_size=%s",
+            "cov_overview marker verified: mode=%s completed_at=%s fuzzer_count=%s llvm_cov_json_size=%s",
             mode, completed_at.isoformat(), fuzzer_count, marker.get("llvm_cov_json_size"),
         )
 
@@ -152,10 +152,10 @@ class Reply:
                 detail += f" stdout={stdout_snippet}"
             raise AnalysisStepError("reply_full_coverage", detail)
 
-        # Verify show_overview actually did work in THIS run.
+        # Verify cov_overview actually did work in THIS run.
         self._verify_run_marker(introspector_start_wall)
 
-        parsed = self._try_parse_show_overview_output()
+        parsed = self._try_parse_cov_overview_output()
         if not parsed:
             raise AnalysisStepError(
                 "reply_full_coverage",
