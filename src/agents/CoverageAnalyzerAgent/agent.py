@@ -18,14 +18,14 @@ class CoverageAnalyzerAgent(BaseAgent):
             "scroll_up", 
             "scroll_down",
             "find_file",
-            "show_overview_code_coverage",
-            "show_module_code_coverage",
-            "show_file_code_coverage",
-            "show_api_code_coverage",
-            "show_func_code_coverage",
-            "show_branch_blocker_code_coverage",
-            "call_chain_analysis",
-            "generate_coverage_guidance_report",
+            "cov_overview",
+            "cov_module",
+            "cov_file",
+            "cov_api",
+            "cov_func",
+            "cov_blockers",
+            "call_chain",
+            "cov_report",
             "exit",
             "bash"
         ]
@@ -78,7 +78,7 @@ class CoverageAnalyzerAgent(BaseAgent):
         new_files = set(current_files) - set(self.coverage_guidance_files)
         
         if len(new_files) == 0:
-            reminder = f"As a Coverage Analyzer Agent, you are responsible for analyzing the code coverage of the project and generating coverage guidance. But you did not record any new coverage guidance by using the tool `generate_coverage_guidance_report`. Please generate a coverage analysis report before exiting."
+            reminder = f"As a Coverage Analyzer Agent, you are responsible for analyzing the code coverage of the project and generating coverage guidance. But you did not record any new coverage guidance by using the tool `cov_report`. Please generate a coverage analysis report before exiting."
             self.history_processor.extend_user_msg(content=reminder)
             return False
         return True  

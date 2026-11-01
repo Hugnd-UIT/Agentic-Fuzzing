@@ -20,9 +20,9 @@ class CrashAnalyzerAgent(BaseAgent):
             "write_file",
             "scroll_up",
             "scroll_down",
-            "crash_artifact_analysis",
-            "crash_debugger",
-            "generate_crash_report",
+            "triage_crash",
+            "debug_crash",
+            "report_crash",
             "exit",
             "bash"
         ]

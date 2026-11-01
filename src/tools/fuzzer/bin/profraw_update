@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 ################################################################################
-"""Helper script for upgrading a profraw file to latest version."""
 
 from collections import namedtuple
 import struct

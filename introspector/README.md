@@ -61,7 +61,7 @@ Missing data causes the step to be skipped with a warning.
 
 ### Final Coverage Reply → `final_coverage.json`
 
-Runs `show_overview_code_coverage --replay` and parses the resulting coverage
+Runs `cov_overview --replay` and parses the resulting coverage
 data into the final coverage summary that the Storage normalizer consumes.
 
 ```json
@@ -74,7 +74,7 @@ data into the final coverage summary that the Storage normalizer consumes.
 }
 ```
 
-**Dependencies:** `show_overview_code_coverage` in PATH (copied by
+**Dependencies:** `cov_overview` in PATH (copied by
 `copy-tools.sh`).
 
 > The JSON examples below this section in older revisions described

@@ -278,7 +278,7 @@ class CoverageUtils:
         if not os.path.exists(fuzzing_corpus_dir):
             raise Exception(f"[!] Error: The fuzzing corpus directory {fuzzing_corpus_dir} for fuzzer {fuzzer_id} does not exist!")
         if len(os.listdir(fuzzing_corpus_dir)) == 0:
-            raise Exception(f"[!] Error: The fuzzing corpus directory {fuzzing_corpus_dir} for fuzzer {fuzzer_id:03d} is empty! Please report this error to the ManagerAgent and make sure the fuzzer {fuzzer_id:03d} has executed at least once by the tool `run_fuzz_target`.")
+            raise Exception(f"[!] Error: The fuzzing corpus directory {fuzzing_corpus_dir} for fuzzer {fuzzer_id:03d} is empty! Please report this error to the ManagerAgent and make sure the fuzzer {fuzzer_id:03d} has executed at least once by the tool `run_fuzzer`.")
         fuzzer_coverage_dir = ProjectUtils.get_fuzzer_coverage_dir(fuzzer_id)
         profraw_dir = os.path.join(fuzzer_coverage_dir, PROFRAW_DIR_NAME)
         if not os.path.exists(profraw_dir):

@@ -26,7 +26,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 }
 """
 
-def validate_dictionary_file(file_path: str):
+def check_dict(file_path: str):
     """
     Validate the format of a dictionary file.
 
@@ -116,7 +116,7 @@ def validate_dictionary_file(file_path: str):
     print(f"[+] Dictionary file is valid.")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("validate_dictionary_file", "Validate whether the format of the dictionary file is legal.")
+    parser = argparse.ArgumentParser("check_dict", "Validate whether the format of the dictionary file is legal.")
     parser.add_argument("dictionary_file", type=str,  help="The path of dictionary file you want to validate.")
     args = parser.parse_args()
-    validate_dictionary_file(args.dictionary_file)
+    check_dict(args.dictionary_file)

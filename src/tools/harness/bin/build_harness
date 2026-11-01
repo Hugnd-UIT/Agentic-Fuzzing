@@ -226,7 +226,7 @@ def reset_fuzzer_execution_state(harness_id: int):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        prog="compile_and_check_harness",
+        prog="build_harness",
         description="Compile the harness and check whether it contains compilation errors."
     )
     parser.add_argument(

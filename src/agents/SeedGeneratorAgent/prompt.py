@@ -29,7 +29,7 @@ You are the **Seed Corpus Acquisition Agent**. Your sole responsibility is to lo
 3.  **Select Source**:
     - **Exact Match**: Target=`libaom`, OSS-Fuzz=`libaom`.
     - **Protocol Match**: Target=`my_video_lib`, OSS-Fuzz=`ffmpeg`.
-    - **Select Criteria**: All exact matched and protocol matched projects. Use tool `track_web_retrieve_progress` to record matched projects waiting for retrieval.
+    - **Select Criteria**: All exact matched and protocol matched projects. Use tool `track_dl` to record matched projects waiting for retrieval.
 
 **Important**: You must discover all the exact matched and protocol matched projects. You should not give up directly if found an exact matched project, you should discover all the useful projects.
 
@@ -48,7 +48,7 @@ You must find the seed corpus. Since the content showed by `search_web` is from 
 ### Phase 3: Installation
 1.  **Extract**: If the data is an archive (`.zip`, `.tar`), extract it.
 2.  **Deploy**: Move all individual seed files to `$OUTPUT/seeds/`.
-3.  **Track Progress**: Use tool `track_web_retrieve_progress` to notify the completion of the seed corpus retrieval for the matched project.
+3.  **Track Progress**: Use tool `track_dl` to notify the completion of the seed corpus retrieval for the matched project.
 
 ## Example
 

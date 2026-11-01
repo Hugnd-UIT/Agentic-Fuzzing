@@ -10,7 +10,7 @@ from pathlib import Path
 import shutil
 from project_utils import ProjectUtils
 
-def crash_artifact_analysis(fuzzer_id: int, crash_artifact_path: str, timeout=60):
+def triage_crash(fuzzer_id: int, crash_artifact_path: str, timeout=60):
     """
     Execute the crash artifact on the fuzzer binary and gather information from the crash stacktrace and source code.
     
@@ -101,7 +101,7 @@ def main():
     parser.add_argument('crash_artifact_path', help='Path to the crash artifact')
     args = parser.parse_args()
 
-    crash_artifact_analysis(args.fuzzer_id, args.crash_artifact_path, timeout=60)
+    triage_crash(args.fuzzer_id, args.crash_artifact_path, timeout=60)
 
 
 if __name__ == '__main__':

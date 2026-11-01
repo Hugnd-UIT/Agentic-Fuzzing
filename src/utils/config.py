@@ -75,7 +75,7 @@ else:
     print(f"Configuration file not found: {CONFIG_FILE}", file=sys.stderr)
     sys.exit(-1)
 
-CMD_TIMEOUT_WHITELIST = ["run_and_check_build_script", "run_fuzz_target"]
+CMD_TIMEOUT_WHITELIST = ["build_target", "run_fuzzer"]
 WHITELIST_CMD_TIMEOUT = CONFIG.ACIARGs.WHITELIST_CMD_TIMEOUT
 
 def get_agent_addresses():

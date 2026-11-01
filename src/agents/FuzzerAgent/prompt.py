@@ -37,8 +37,8 @@ $OUTPUT/
 └── others/ # Other analysis artifacts
 
 # Fuzzer Execution Guideline
-- You can only use the tool `run_fuzz_target` to execute fuzzing process on a fuzzer.
-- **Special Reminder:** For any fuzzer execution, you must use the `run_fuzz_target` tool. If you use any other command to start a fuzzer, it will not be in the timeout whitelist, causing the fuzzer to run for only a very short time before exiting immediately.
-- Don't put any other instructions (e.g., timeout, logs) in the tool `run_fuzz_target`, just execute the command `run_fuzz_target <fuzzer_id>`.
+- You can only use the tool `run_fuzzer` to execute fuzzing process on a fuzzer.
+- **Special Reminder:** For any fuzzer execution, you must use the `run_fuzzer` tool. If you use any other command to start a fuzzer, it will not be in the timeout whitelist, causing the fuzzer to run for only a very short time before exiting immediately.
+- Don't put any other instructions (e.g., timeout, logs) in the tool `run_fuzzer`, just execute the command `run_fuzzer <fuzzer_id>`.
 - Check the fuzzing status after the fuzzing process and report the final fuzzing status to the user.
 """

@@ -70,7 +70,7 @@ def efficient_corpus_minimization(fuzzer_id: int, target_dir: str, input_dirs: l
                 print_debug(f"[!] ERROR: Failed to collect coverage for file {file_path}! {e}")
                 continue
     if len(corpus_dict) == 0:
-        print(f"[!] WARNING: Cannot examine any library coverage information from the fuzzer! There are three reasons cause this error: 1. The harness of this fuzzer did not contain any library code. 2. No API has been exercised by the fuzzing inputs. 3. The fuzzer is not compiled by the `compile_and_check_harness` tool. Please **Exit** and report this issue to HarnessAgent to seek help.")
+        print(f"[!] WARNING: Cannot examine any library coverage information from the fuzzer! There are three reasons cause this error: 1. The harness of this fuzzer did not contain any library code. 2. No API has been exercised by the fuzzing inputs. 3. The fuzzer is not compiled by the `build_harness` tool. Please **Exit** and report this issue to HarnessAgent to seek help.")
         minimal_set = corpus_files
     else:
         minimal_set = select_corpus_by_examining_sancov(corpus_dict)
@@ -505,7 +505,7 @@ def check_execution(fuzzer_id: int):
     fuzz_profile = ProjectUtils.get_fuzzer_profile()
     fuzzer_info = fuzz_profile.fuzzers.get(fuzzer_id, None)
     if fuzzer_info is None:
-        print(f"[!] ERROR:The fuzzer {ProjectUtils.get_fuzzer_str_by_id(fuzzer_id)} was not compiled by the `compile_and_check_harness` tool! Please **Exit** and report this issue to seek help.")
+        print(f"[!] ERROR:The fuzzer {ProjectUtils.get_fuzzer_str_by_id(fuzzer_id)} was not compiled by the `build_harness` tool! Please **Exit** and report this issue to seek help.")
         exit(-1)
     if fuzzer_info.state == FuzzerExecutionState.NOT_EXECUTED:
         return
@@ -729,7 +729,7 @@ def force_override_fuzzer_execution_state(fuzzer_id: int):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        "run_fuzz_target", "run the fuzzer taget until it reaches code coverage plateau."
+        "run_fuzzer", "run the fuzzer taget until it reaches code coverage plateau."
     )
     parser.add_argument(
         "fuzzer_id", type=int, help="The fuzzer instance ID to run. E.g., 000, 001, etc."

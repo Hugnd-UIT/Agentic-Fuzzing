@@ -22,7 +22,7 @@ class HarnessAgent(BaseAgent):
             "edit",
             "scroll_up",
             "scroll_down",
-            "compile_and_check_harness",
+            "build_harness",
             "search_web",
             "exit",
             "bash"
@@ -55,20 +55,20 @@ class HarnessAgent(BaseAgent):
     
     @override
     def is_agent_task_completed(self) -> bool:
-        compile_tool_count = len(list(filter(lambda x: x.function_call == "compile_and_check_harness", self.tool_calls)))
+        compile_tool_count = len(list(filter(lambda x: x.function_call == "build_harness", self.tool_calls)))
         if compile_tool_count == 0:
             reminder_message = f"This is a reminder message from user.\n"
-            reminder_message += f"No compile and check harness tool call found. Please make sure you have called the tool `compile_and_check_harness` to compile and check the harness.\n"
+            reminder_message += f"No compile and check harness tool call found. Please make sure you have called the tool `build_harness` to compile and check the harness.\n"
             self.history_processor.extend_user_msg(content=reminder_message)
             return False
         last_compile_tool_call = 0
         for i,tool_call in enumerate(self.tool_calls):
-            if tool_call.function_call == "compile_and_check_harness":
+            if tool_call.function_call == "build_harness":
                 last_compile_tool_call = i
         for tool_call in self.tool_calls[last_compile_tool_call:]:
             if tool_call.function_call in ["edit", "write_file"]:
                 reminder_message = f"This is a reminder message from user.\n"
-                reminder_message += f"Found harness editing after the last `compile_and_check_harness` tool call. Please make sure you have called the tool `compile_and_check_harness` to compile the harness after each editing.\n"
+                reminder_message += f"Found harness editing after the last `build_harness` tool call. Please make sure you have called the tool `build_harness` to compile the harness after each editing.\n"
                 self.history_processor.extend_user_msg(content=reminder_message)
                 return False
         return True

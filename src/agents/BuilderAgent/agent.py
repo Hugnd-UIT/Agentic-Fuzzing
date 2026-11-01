@@ -20,7 +20,7 @@ class BuilderAgent(BaseAgent):
             "edit",
             "scroll_up",
             "scroll_down",
-            "run_and_check_build_script",
+            "build_target",
             "search_web",
             "bash",
             "exit"
@@ -47,20 +47,20 @@ class BuilderAgent(BaseAgent):
     
     @override
     def is_agent_task_completed(self) -> bool:
-        build_tool_count = len(list(filter(lambda x: x.function_call == "run_and_check_build_script", self.tool_calls)))
+        build_tool_count = len(list(filter(lambda x: x.function_call == "build_target", self.tool_calls)))
         if build_tool_count == 0:
             reminder_message = f"This is a reminder message from user.\n"
-            reminder_message += f"No build script running tool call found. Please make sure you have called the tool `run_and_check_build_script` to run and check the build script.\n"
+            reminder_message += f"No build script running tool call found. Please make sure you have called the tool `build_target` to run and check the build script.\n"
             self.history_processor.extend_user_msg(content=reminder_message)
             return False
         last_build_tool_call = 0
         for i,tool_call in enumerate(self.tool_calls):
-            if tool_call.function_call == "run_and_check_build_script":
+            if tool_call.function_call == "build_target":
                 last_build_tool_call = i
         for tool_call in self.tool_calls[last_build_tool_call:]:
             if tool_call.function_call in ["edit", "write_file"]:
                 reminder_message = f"This is a reminder message from user.\n"
-                reminder_message += f"Found build script editing after the last `run_and_check_build_script` tool call. Please make sure you have called the tool `run_and_check_build_script` to run and check the build script after each editing.\n"
+                reminder_message += f"Found build script editing after the last `build_target` tool call. Please make sure you have called the tool `build_target` to run and check the build script after each editing.\n"
                 self.history_processor.extend_user_msg(content=reminder_message)
                 return False
         return True

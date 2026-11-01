@@ -28,7 +28,7 @@ class ManagerAgent(BaseAgent):
             "goto",
             "scroll_up",
             "scroll_down",
-            "observe_current_states",
+            "check_status",
             "bash",
             "send_agent_task"
         ]
@@ -91,7 +91,7 @@ class ManagerAgent(BaseAgent):
 
     @override
     def register_agent_pre_call(self):
-        command = "observe_current_states"
+        command = "check_status"
         observation = self.aci.run_command_with_timeout(command, timeout=120, max_output_lines=200)
         message = f"This is the current states of the fuzzing tasks:\n{observation}"
         self.history_processor.extend_user_msg(content=message)
@@ -111,7 +111,7 @@ class ManagerAgent(BaseAgent):
         
         self.logger.info(msg=f"Sending Agent task: {agent_name}\nTask description: {task_description}")
         observation = agent.run(task_description)
-        command = "observe_current_states"
+        command = "check_status"
         new_observation = self.aci.run_command_with_timeout(command, timeout=120, max_output_lines=200)
         message = f"This is the current states of the fuzzing tasks after the agent {agent_name} has completed its task:\n{new_observation}"
         return observation + "\n" + message

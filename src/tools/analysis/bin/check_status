@@ -399,7 +399,7 @@ def check_fuzzer() -> bool:
         fuzz_profile = ProjectUtils.get_fuzzer_profile()
         fuzzer_info = fuzz_profile.fuzzers.get(fuzzer_id)
         if fuzzer_info is None:
-            task_entry = TaskEntry("Check Fuzzers", Status.ERROR, f"The fuzzer {fuzzer_id:03d} is not compiled by the designated tool `compile_and_check_harness`. Please report this issue and compile it again.")
+            task_entry = TaskEntry("Check Fuzzers", Status.ERROR, f"The fuzzer {fuzzer_id:03d} is not compiled by the designated tool `build_harness`. Please report this issue and compile it again.")
             TASKs.add_sub_task(task_entry)
             return False
         if fuzzer_info.state == FuzzerExecutionState.NOT_EXECUTED:

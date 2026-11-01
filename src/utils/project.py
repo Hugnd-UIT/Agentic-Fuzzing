@@ -58,19 +58,18 @@ def init_environment():
     Initialize the environment for the project by setting up necessary directories and environment variables.
     If `delete` is True, existing directories will be deleted and recreated.
     """
-    # Ask the user if they want to delete existing output files
-    if is_autoclean_enabled():
+    auto_clean = os.environ.get("AGENTIC_FUZZING_AUTO_CLEAN")
+    if auto_clean == "1":
         delete = True
+    elif auto_clean == "0":
+        delete = False
     elif not sys.stdin or not sys.stdin.isatty():
         delete = False
     else:
         ins = input(
             "Do you want to delete existing output files? Enter 1 to delete, others not delete:"
         )
-        if ins.strip() == "1":
-            delete = True
-        else:
-            delete = False
+        delete = (ins.strip() == "1")
 
     print("[+] Initializing environment...")
 

@@ -17,7 +17,7 @@ def test_harness_hooking():
 def test_harness_complete():
     harness_agent = HarnessAgent()
     harness_agent.register_agent_pre_call()
-    compile_tool_call = mock_tool_call("compile_and_check_harness", "123", {"harness_id": 0})
+    compile_tool_call = mock_tool_call("build_harness", "123", {"harness_id": 0})
     harness_agent.execute_tool_calling(compile_tool_call)
     assert len(harness_agent.tool_calls) == 1
     assert harness_agent.is_agent_task_completed() == True
@@ -27,15 +27,15 @@ def test_last_compile_id():
     harness_agent.register_agent_pre_call()
 
     # 0
-    compile_tool_call = mock_tool_call("compile_and_check_harness", "123", {"harness_id": 0})
+    compile_tool_call = mock_tool_call("build_harness", "123", {"harness_id": 0})
     harness_agent.execute_tool_calling(compile_tool_call)
 
     # 1
-    compile_tool_call = mock_tool_call("compile_and_check_harness", "123", {"harness_id": 0})
+    compile_tool_call = mock_tool_call("build_harness", "123", {"harness_id": 0})
     harness_agent.execute_tool_calling(compile_tool_call)
 
     # 2
-    compile_tool_call = mock_tool_call("compile_and_check_harness", "123", {"harness_id": 0})
+    compile_tool_call = mock_tool_call("build_harness", "123", {"harness_id": 0})
     harness_agent.execute_tool_calling(compile_tool_call)
     assert len(harness_agent.tool_calls) == 3
     assert harness_agent.is_agent_task_completed() == True
@@ -49,7 +49,7 @@ def test_harness_editing_complete():
     harness_agent.execute_tool_calling(compile_tool_call)
 
     # 1
-    compile_tool_call = mock_tool_call("compile_and_check_harness", "123", {"harness_id": 0})
+    compile_tool_call = mock_tool_call("build_harness", "123", {"harness_id": 0})
     harness_agent.execute_tool_calling(compile_tool_call)
 
     assert len(harness_agent.tool_calls) == 2
@@ -60,7 +60,7 @@ def test_harness_editing_not_complete():
     harness_agent.register_agent_pre_call()
 
     # 0
-    compile_tool_call = mock_tool_call("compile_and_check_harness", "123", {"harness_id": 0})
+    compile_tool_call = mock_tool_call("build_harness", "123", {"harness_id": 0})
     harness_agent.execute_tool_calling(compile_tool_call)
 
     # 1

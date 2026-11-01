@@ -4,7 +4,7 @@
 Non-interactive tool to create a normalized crash report file for a fuzzer.
 
 This variant accepts positional arguments (no explicit --name= required for the main inputs).
-Usage: generate_crash_report "<fuzzer_id>" "<crash_input>" "<content>"
+Usage: report_crash "<fuzzer_id>" "<crash_input>" "<content>"
 """
 
 import argparse
@@ -17,9 +17,9 @@ import shutil
 import select
 
 # @yaml
-# generate_crash_report:
+# report_crash:
 # signature: |-
-#   generate_crash_report "<fuzzer_id>" "<crash_input>" "<content>
+#   report_crash "<fuzzer_id>" "<crash_input>" "<content>
 # docstring: Create a normalized crash report file for a given fuzzer and crash input.
 #   - Writes a markdown report file named `fuzzer_<fuzzer_id>_crash_<crash_id>_report.md`.
 #   - `content` is the full markdown report text passed positionally (quoted on the command line).
@@ -45,7 +45,7 @@ def read_with_timeout(timeout_sec):
     else:  # Timeout occurred
         raise TimeoutError("No input received within the timeout period")
 
-def generate_crash_report(fuzzer_id: int, crash_artifact_path: str, triage: str, content: str) -> None:
+def report_crash(fuzzer_id: int, crash_artifact_path: str, triage: str, content: str) -> None:
     if not os.path.exists(crash_artifact_path):
         print(f"[!] ERROR: Crash input file does not exist: {crash_artifact_path}")
         exit(-1)
@@ -114,7 +114,7 @@ def abort_on_missing_crash_debugging(fuzzer_id: int, triage: str):
     exit(-1)
 
 if __name__ == "__main__":
-    usage = 'Usage: generate_crash_report "<fuzzer_id>" "<crash_artifact_path>" "<triage>" "<content>"'
+    usage = 'Usage: report_crash "<fuzzer_id>" "<crash_artifact_path>" "<triage>" "<content>"'
     parser = argparse.ArgumentParser(description="Generate normalized crash report file", usage=usage)
     # positional args (content is positional to make it non-interactive)
     parser.add_argument('fuzzer_id', type=int, help='The fuzzer instance ID to generate the crash report for. E.g., 000, 001, etc.')
@@ -138,4 +138,4 @@ if __name__ == "__main__":
     abort_on_missing_harness_minimization(fuzzer_id, triage)
     abort_on_missing_crash_debugging(fuzzer_id, triage)
 
-    generate_crash_report(fuzzer_id, crash_artifact_path, triage, content)
+    report_crash(fuzzer_id, crash_artifact_path, triage, content)

@@ -470,7 +470,7 @@ class LibraryBuilder:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        "run_and_check_build_script", usage="run_and_check_build_script <script_dir>"
+        "build_target", usage="build_target <script_dir>"
     )
     parser.add_argument("script_path", type=str, help="the path of script path")
     parser.add_argument("--sanitizer", action="store_true", help="only build the library with sanitizer instrumentation")

@@ -89,10 +89,10 @@ tools:
     signature: undo_edit
     docstring: undoes the last edit operation by restoring the file from the backup created in /tmp directory. This will revert the file to its state before the most recent edit command.
     arguments: []
-  write_bin_to_file:
+  write_bin:
     timeout: 30
     signature: |-
-      write_bin_to_file <path> << 'end_of_write_bin'
+      write_bin <path> << 'end_of_write_bin'
       <binary_string>
       end_of_write_bin
     docstring: writes the given binary string (as text, e.g. hex or base64) to the given file. If the file does not exist, it will be created. If the file exists, it will be overwritten. Supports hex (default) and base64 encoding via --encoding argument.
@@ -174,26 +174,26 @@ These tools encapsulate the error-prone recurring procedures in the fuzzing pipe
 
 ```
 tools:
-  run_and_check_build_script:
+  build_target:
     timeout: 7200
-    signature: run_and_check_build_script <script_path>
+    signature: build_target <script_path>
     docstring: "Run the build script and verify the correct generation of build artifacts. This tool: 1. Automatically exports required environment variables (CC, CXX, CFLAGS, CXXFLAGS, WORK) to the build script's context. 2. Executes the build script to generate building artifacts with three kinds of instrumentation: LibFuzzer Engine (stored in 'basic/' subdirectory), Sanitizers (stored in 'sanitizer/' subdirectory) and Code coverage  (stored in 'coverage/' subdirectory)."
     arguments:
       - name: script_path
         type: string
         description: the path of the build script
         required: true
-  validate_dictionary_file:
-    signature: validate_dictionary_file "<dictionary_file>"
+  check_dict:
+    signature: check_dict "<dictionary_file>"
     docstring: Validate whether the format of the dictionary file is legal.
     arguments:
       - name: dictionary_file
         type: string
         description: The path of dictionary file you want to validate.
         required: true
-  compile_and_check_harness:
+  build_harness:
     timeout: 1200
-    signature: compile_and_check_harness <harness_id> [<extra_flags>]
+    signature: build_harness <harness_id> [<extra_flags>]
     docstring: Compile the harness to fuzzers and check whether it contains compilation errors. The compiler flags for fuzzing is equipped internally.
     arguments:
       - name: harness_id
@@ -204,9 +204,9 @@ tools:
         type: string
         description: The extra flags used to compile the harness. Provide it only if you encountered fatal compilation errors.
         required: false
-  run_fuzz_target:
+  run_fuzzer:
     timeout: 3900
-    signature: run_fuzz_target <fuzzer_id>
+    signature: run_fuzzer <fuzzer_id>
     docstring: A custom wrapper to run a fuzz target with a specific fuzzer instance ID. It automatically loads the fuzzing corpus and dictionaries for the specified fuzzer instance and sets the appropriate arguments to run the fuzz target. You should always use this tool to run your fuzzers. If you use any other command to start a fuzzer, it will not be in the timeout whitelist, causing the fuzzer to run for only a very short time before exiting immediately.
     arguments:
       - name: fuzzer_id
@@ -235,8 +235,8 @@ tools:
           - To inspect a specific project, pass the project name (e.g., "zlib"). 
           - To read a file, pass the full path (e.g., "zlib/build.sh").
         required: true
-  track_web_retrieve_progress:
-    signature: track_web_retrieve_progress "<task_kind>" "<action>" "<project_names>"
+  track_dl:
+    signature: track_dl "<task_kind>" "<action>" "<project_names>"
     docstring: Record and track the web retrieve progress for the given task kind and project names. 
     arguments:
       - name: task_kind
@@ -261,13 +261,13 @@ Inspired by FuzzIntrospector, this interface organizes code coverage data into a
 
 ```
 tools:
-  show_overview_code_coverage:
+  cov_overview:
     timeout: 1200
-    signature: show_overview_code_coverage
+    signature: cov_overview
     docstring: Displays the overall code coverage statistics for the project.
-  show_module_code_coverage:
+  cov_module:
     timeout: 1200
-    signature: show_module_code_coverage <path> <page> [options]
+    signature: cov_module <path> <page> [options]
     docstring: Displays the module-level code coverage statistics for the project.
     arguments:
       - name: path
@@ -278,27 +278,27 @@ tools:
         type: integer
         description: The page number to show coverage for. Defaults to 1.
         required: true
-  show_file_code_coverage:
+  cov_file:
     timeout: 1200
-    signature: show_file_code_coverage  <page> [options]
+    signature: cov_file  <page> [options]
     docstring: Displays the file-level code coverage statistics for the project.
     arguments:
       - name: page
         type: integer
         description: The page number to show coverage for. Defaults to 1.
         required: true
-  show_api_code_coverage:
+  cov_api:
     timeout: 1200
-    signature: show_api_code_coverage <page> [options]
+    signature: cov_api <page> [options]
     docstring: Displays the API-level code coverage statistics for the project.
     arguments:
       - name: page
         type: integer
         description: The page number to show coverage for. Defaults to 1.
         required: true
-  show_func_code_coverage:
+  cov_func:
     timeout: 1200
-    signature: show_func_code_coverage <page> <search_func> [options]
+    signature: cov_func <page> <search_func> [options]
     docstring: Displays the function-level code coverage statistics for the project.
     arguments:
       - name: page
@@ -309,22 +309,22 @@ tools:
         type: string
         description: The function name to search (not regex), all matches will be displayed. Defaults to ''.
         required: false
-  show_branch_blocker_code_coverage:
+  cov_blockers:
     timeout: 1200
-    signature: show_branch_blocker_code_coverage
+    signature: cov_blockers
     docstring: Displays the branch blocker-level code coverage statistics for the project.
-  call_chain_analysis:
+  call_chain:
     timeout: 1200
-    signature: call_chain_analysis <target_func>
+    signature: call_chain <target_func>
     docstring: Analyze the call graph to find the shortest call traces from public APIs to the target function. This help you understand how to reach the target function from public APIs.
     arguments:
       - name: target_func
         type: string
         description: The target function to analyze the call chain to.
         required: true
-  generate_coverage_guidance_report:
+  cov_report:
     timeout: 10
-    signature: generate_coverage_guidance_report <harness_id> <content>
+    signature: cov_report <harness_id> <content>
     docstring: Generates a coverage analysis report for the next harness and save it to the coverage guidance directory.
     arguments:
       - name: harness_id
@@ -344,9 +344,9 @@ This interface supports evidence-based crash triage. It enables the Crash Analyz
 
 ```
 tools:
-  harness_minimizer:
+  reduce_poc:
     timeout: 1200
-    signature: harness_minimizer <fuzzer_id>
+    signature: reduce_poc <fuzzer_id>
     docstring: Minimize the harness code while retaining the crash-triggering behavior.
       The minimized harness will be compiled into a new fuzzer binary for you to further
       analyze the crash.
@@ -356,9 +356,9 @@ tools:
       description: The fuzzer (or harness) instance ID to generate minimized harness
         for.
       required: true
-  crash_artifact_analysis:
+  triage_crash:
     timeout: 60
-    signature: crash_artifact_analysis <fuzzer_id> <crash_artifact_path>
+    signature: triage_crash <fuzzer_id> <crash_artifact_path>
     docstring: Execute the crash artifact on the fuzzer binary and gather information
       from the crash stacktrace and source code.
     arguments:
@@ -372,9 +372,9 @@ tools:
       description: Path to the artifact file that caused the crash artifact, which
         is usually named as "crash-<hash>", must be a file, not a directory
       required: true
-  crash_debugger:
+  debug_crash:
     timeout: 120
-    signature: crash_debugger <fuzz_target_binary> <crash_artifact_path> <gdb_commands>
+    signature: debug_crash <fuzz_target_binary> <crash_artifact_path> <gdb_commands>
       [--reset <0|1>]
     docstring: Run a stateful GDB session on the fuzzer binary to debug a crash. The
       tool automatically maintains your previous GDB commands. You can pass multiple
@@ -399,9 +399,9 @@ tools:
       description: Pass 1 to clear the session history before executing the new commands,
         0 otherwise. Default is 0.
       required: false
-  generate_crash_report:
+  report_crash:
     timeout: 10
-    signature: generate_crash_report "<fuzzer_id>" "<crash_artifact_path>" "<triage>"
+    signature: report_crash "<fuzzer_id>" "<crash_artifact_path>" "<triage>"
       "<content>"
     docstring: 'Create a normalized crash report file for a given fuzzer and crash
       input.'
@@ -437,9 +437,9 @@ These tools are used exclusively by the Manager Agent to orchestrate the multi-a
 
 ```
 tools:
-  observe_current_states:
+  check_status:
     timeout: 120
-    signature: observe_current_states
+    signature: check_status
     docstring: Check and observe the status of the whole fuzzing tasks, including
       build status, harness status, dictionary status, fuzzing status, and any issues
       in the progress of fuzzing. Please feel free to use this tool to check the status

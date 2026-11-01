@@ -341,7 +341,7 @@ Thought: I found that I generated string and numeric constants as test cases in 
 
 ## Phase 4: Validation and Compilation
 ```example
-Thought: The harness looks correct. Now I'll call the tool `compile_and_check_harness` compile it to verify it works.
+Thought: The harness looks correct. Now I'll call the tool `build_harness` compile it to verify it works.
 ```
 
 **Validation Criteria**:
@@ -358,7 +358,7 @@ Thought: I found compilation errors in the harness. Let me fix them.
 
 [Apply specific fixes based on error messages]
 ```example
-Thought: Now let me recompile it by `compile_and_check_harness` to verify the fixes.
+Thought: Now let me recompile it by `build_harness` to verify the fixes.
 ```
 
 """
@@ -663,7 +663,7 @@ Thought: I found that I generated string and numeric constants as test cases in 
 
 ## Phase 4: Validation and Compilation
 ```example
-Thought: The harness looks correct. Now I'll call the tool `compile_and_check_harness` compile it to verify it works.
+Thought: The harness looks correct. Now I'll call the tool `build_harness` compile it to verify it works.
 ```
 
 **Validation Criteria**:
@@ -680,6 +680,6 @@ Thought: I found compilation errors in the harness. Let me fix them.
 
 [Apply specific fixes based on error messages]
 ```example
-Thought: Now let me recompile it by `compile_and_check_harness` to verify the fixes.
+Thought: Now let me recompile it by `build_harness` to verify the fixes.
 ```
 """

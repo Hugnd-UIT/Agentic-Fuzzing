@@ -9,7 +9,7 @@ import logging
 import re
 
 class FuzzerAgent(BaseAgent):
-    logger = get_logger("Fuzzer Executor Agent")
+    logger = get_logger("Fuzzer Agent")
     tools: List[dict] = API_TOOL_CALLS.get_tool_calls(
         [
             "find_file",
@@ -21,7 +21,7 @@ class FuzzerAgent(BaseAgent):
             "edit",
             "scroll_up",
             "scroll_down",
-            "run_fuzz_target",
+            "run_fuzzer",
             "exit",
             "bash"
         ]

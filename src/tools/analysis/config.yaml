@@ -1,7 +1,7 @@
 tools:
-  observe_current_states:
+  check_status:
     timeout: 120
-    signature: observe_current_states
+    signature: check_status
     docstring:
       Check and observe the status of the whole fuzzing tasks, including
       build status, harness status, dictionary status, fuzzing status, and any issues
@@ -11,9 +11,9 @@ tools:
       You still need to decide what to do next based on the process you have executed,
       the feedback you received, and the actual situation of your current working
       directory.
-  harness_minimizer:
+  reduce_poc:
     timeout: 1200
-    signature: harness_minimizer <fuzzer_id>
+    signature: reduce_poc <fuzzer_id>
     docstring:
       Minimize the harness code while retaining the crash-triggering behavior.
       The minimized harness will be compiled into a new fuzzer binary for you to further
@@ -25,9 +25,9 @@ tools:
           The fuzzer (or harness) instance ID to generate minimized harness
           for.
         required: true
-  crash_artifact_analysis:
+  triage_crash:
     timeout: 60
-    signature: crash_artifact_analysis <fuzzer_id> <crash_artifact_path>
+    signature: triage_crash <fuzzer_id> <crash_artifact_path>
     docstring:
       Execute the crash artifact on the fuzzer binary and gather information
       from the crash stacktrace and source code.
@@ -44,10 +44,10 @@ tools:
           Path to the artifact file that caused the crash artifact, which
           is usually named as "crash-<hash>", must be a file, not a directory
         required: true
-  crash_debugger:
+  debug_crash:
     timeout: 120
     signature:
-      crash_debugger <fuzz_target_binary> <crash_artifact_path> <gdb_commands>
+      debug_crash <fuzz_target_binary> <crash_artifact_path> <gdb_commands>
       [--reset <0|1>]
     docstring:
       Run a stateful GDB session on the fuzzer binary to debug a crash. The
@@ -75,10 +75,10 @@ tools:
           Pass 1 to clear the session history before executing the new commands,
           0 otherwise. Default is 0.
         required: false
-  generate_crash_report:
+  report_crash:
     timeout: 10
     signature:
-      generate_crash_report "<fuzzer_id>" "<crash_artifact_path>" "<triage>"
+      report_crash "<fuzzer_id>" "<crash_artifact_path>" "<triage>"
       "<content>"
     docstring:
       "Create a normalized crash report file for a given fuzzer and crash

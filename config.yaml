@@ -13,6 +13,6 @@ aci_variables:
   CMD_OUTPUT_LINES: 225 # Maximum command output lines for general commands
   MAX_OUTPUT_CHARACTERS: 100000 # Maximum command output characters for general commands
   COMPILER_OUTPUT_LINES: 20 # Maximum command output lines for compiler commands
-  WHITELIST_CMD_TIMEOUT: 5400 # Whitelist command timeout in seconds. Now commands in whitelist is: []"run_and_check_build_script", "run_fuzz_target"]
+  WHITELIST_CMD_TIMEOUT: 5400 # Whitelist command timeout in seconds. Now commands in whitelist is: []"build_target", "run_fuzzer"]
   FUZZER_CHECK_TIMEOUT: 10 # Fuzzer check timeout in seconds
   DISABLE_COVERAGE_GUIDANCE: 0 # Disable coverage guidance in the system prompt

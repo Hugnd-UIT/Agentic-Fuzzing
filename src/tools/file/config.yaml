@@ -76,10 +76,10 @@ tools:
     signature: undo_edit
     docstring: undoes the last edit operation by restoring the file from the backup created in /tmp directory. This will revert the file to its state before the most recent edit command.
     arguments: []
-  write_bin_to_file:
+  write_bin:
     timeout: 30
     signature: |-
-      write_bin_to_file <path> << 'end_of_write_bin'
+      write_bin <path> << 'end_of_write_bin'
       <binary_string>
       end_of_write_bin
     docstring: writes the given binary string (as text, e.g. hex or base64) to the given file. If the file does not exist, it will be created. If the file exists, it will be overwritten. Supports hex (default) and base64 encoding via --encoding argument.

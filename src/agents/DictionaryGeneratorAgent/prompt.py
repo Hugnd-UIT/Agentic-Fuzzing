@@ -27,7 +27,7 @@ You are the **Dictionary Acquisition & Optimization Specialist**. Your goal is t
 3.  **Select Source**:
     - **Exact Match**: Target=`libaom`, OSS-Fuzz=`libaom`.
     - **Protocol Match**: Target=`my_video_lib`, OSS-Fuzz=`ffmpeg`.
-    - **Select Criteria**: All exact matched and protocol matched projects. Use tool `track_web_retrieve_progress` to record matched projects waiting for retrieval.
+    - **Select Criteria**: All exact matched and protocol matched projects. Use tool `track_dl` to record matched projects waiting for retrieval.
     - **Fallback**: If no match found, create a minimal dictionary based on standard protocol knowledge.
 
 **Important**: You must discover all the exact matched and protocol matched projects. You should not give up directly if found an exact matched project, you should discover all the useful projects.
@@ -54,8 +54,8 @@ Once you have downloaded the raw dictionary content, apply these filters:
 ### Phase 4: Deployment
 1. Format as valid AFL/LibFuzzer syntax (`name="value"`).
 2. Save to `$OUTPUT/dictionary/dictionary.dict`.
-3. Validate using `validate_dictionary_file`.
-4. **Track Progress**: Use tool `track_web_retrieve_progress` to notify the completion of the dictionary retrieval for the matched project.
+3. Validate using `check_dict`.
+4. **Track Progress**: Use tool `track_dl` to notify the completion of the dictionary retrieval for the matched project.
 
 ## Example
 **Scenario**: Target project name is `MyJsonParser`.

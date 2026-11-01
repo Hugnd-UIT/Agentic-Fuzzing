@@ -23,8 +23,8 @@ class DictionaryGeneratorAgent(BaseAgent):
             "edit",
             "scroll_up",
             "scroll_down",
-            "validate_dictionary_file",
-            "track_web_retrieve_progress",
+            "check_dict",
+            "track_dl",
             "search_web",
             "exit",
             "bash"
@@ -70,7 +70,7 @@ class DictionaryGeneratorAgent(BaseAgent):
         progress_file_path = self.get_web_retrieve_progress_path()
         if not os.path.exists(progress_file_path):
             reminder_message = f"This is a reminder message from user.\n"
-            reminder_message += f"No web retrieve progress file found. Please make sure you have recorded the web retrieve progress using the tool `track_web_retrieve_progress`.\n"
+            reminder_message += f"No web retrieve progress file found. Please make sure you have recorded the web retrieve progress using the tool `track_dl`.\n"
             self.history_processor.extend_user_msg(content=reminder_message)
             return False
         with open(progress_file_path, "r") as f:

@@ -133,19 +133,19 @@ class Reply:
 
         try:
             run_logged(
-                ["show_overview_code_coverage", "--replay"],
+                ["cov_overview", "--replay"],
                 cwd=self.config.output_dir,
                 log_ctx="reply_full_coverage",
             )
         except FileNotFoundError:
             raise AnalysisStepError(
                 "reply_full_coverage",
-                "show_overview_code_coverage binary not found on PATH",
+                "cov_overview binary not found on PATH",
             )
         except subprocess.CalledProcessError as exc:
             stderr_snippet = (exc.stderr or "")
             stdout_snippet = (exc.stdout or "")
-            detail = f"show_overview_code_coverage failed (rc={exc.returncode})"
+            detail = f"cov_overview failed (rc={exc.returncode})"
             if stderr_snippet:
                 detail += f" stderr={stderr_snippet}"
             if stdout_snippet:

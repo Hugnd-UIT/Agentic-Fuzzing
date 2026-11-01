@@ -6,9 +6,9 @@ import select
 import binascii
 
 # @yaml
-# write_bin_to_file:
+# write_bin:
 # signature:  |
-#     write_bin_to_file "<path>" << 'end_of_write_bin'
+#     write_bin "<path>" << 'end_of_write_bin'
 #     <binary_string>
 #     end_of_write_bin
 # docstring: writes the given binary string (as text, e.g. hex or base64) to the given file. The content is terminated by a line with only end_of_write_bin on it. If the file does not exist, it will be created. If the file exists, it will be overwritten.
@@ -22,7 +22,7 @@ import binascii
 #       description: the binary string to write to the file. Must be terminated by a line with only end_of_write_bin on it
 #       required: true
 
-usage = "Usage: write_bin_to_file \"path\" << 'end_of_write_bin'\n<hex or base64 string>\nend_of_write_bin"
+usage = "Usage: write_bin \"path\" << 'end_of_write_bin'\n<hex or base64 string>\nend_of_write_bin"
 
 def read_with_timeout(timeout_sec):
     rlist, _, _ = select.select([sys.stdin], [], [], timeout_sec)
@@ -31,7 +31,7 @@ def read_with_timeout(timeout_sec):
     else:
         raise TimeoutError("No input received within the timeout period")
 
-parser = argparse.ArgumentParser("write_bin_to_file", description="Write the given binary string (hex or base64) to the file at the given path. This command saves binary content to your specified file, creating it if it doesn't exist or overwriting its current contents if it does.")
+parser = argparse.ArgumentParser("write_bin", description="Write the given binary string (hex or base64) to the file at the given path. This command saves binary content to your specified file, creating it if it doesn't exist or overwriting its current contents if it does.")
 parser.add_argument("path", help="the path of file you want to write", type=str)
 parser.add_argument("--encoding", choices=["hex", "base64"], default="hex", help="encoding of the input string (default: hex)")
 
