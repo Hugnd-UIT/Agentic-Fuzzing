@@ -2,8 +2,8 @@
 
 import argparse
 from project_utils import ProjectUtils
-from call_graph_analysis import parse_call_graph, print_call_traces
-from header_analysis import get_public_apis
+from call_graph import parse_call_graph, print_call_traces
+from header_util import get_public_apis
 
 def main():
     parser = argparse.ArgumentParser()

@@ -1,7 +1,7 @@
 import orjson
 import cxxfilt
 import re
-# from header_analysis import IS_CPP_PROJECT
+# from header_util import IS_CPP_PROJECT
 def mangle_to_c_style(mangled_name):
     try:
         demangled = cxxfilt.demangle(mangled_name)

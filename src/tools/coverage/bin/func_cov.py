@@ -1,16 +1,16 @@
 from typing import List
 import os
 import math
-from header_analysis import get_public_apis
+from header_util import get_public_apis
 from project_utils import ProjectUtils, FUZZAGENT_DEBUG
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional
 import os
 from llvm_cov import LLVM_COV_DATA
 from project_utils import ProjectUtils
-from call_graph_analysis import parse_call_graph
-from header_analysis import get_public_apis
-from harness_analysis import extract_function_calls
+from call_graph import parse_call_graph
+from header_util import get_public_apis
+from harness_util import extract_function_calls
 from functools import lru_cache
 import networkx as nx
 import random

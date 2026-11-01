@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-from func_cov_utils import FunctionCoverageCollection
+from func_cov import FunctionCoverageCollection
 from project_utils import ProjectUtils
-from show_code_coverage import CoverageUtils
+from cov_show import CoverageUtils
 import argparse
 
 if __name__ == '__main__':

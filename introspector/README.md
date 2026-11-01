@@ -75,7 +75,7 @@ data into the final coverage summary that the Storage normalizer consumes.
 ```
 
 **Dependencies:** `cov_overview` in PATH (copied by
-`copy-tools.sh`).
+`copy_tools.sh`).
 
 > The JSON examples below this section in older revisions described
 > `coverage_over_time`, `token_cost`, `instr_classify`, and `agent_gantt`.
@@ -99,7 +99,7 @@ The Controller automatically launches an analysis container after a fuzzing
 task completes successfully. It reuses the same Docker image and compose
 template, changing only:
 
-- `command`: `bash /root/Agentic Fuzzing/src/tools/copy-tools.sh && python3 -m introspector`
+- `command`: `bash /root/Agentic Fuzzing/src/tools/copy_tools.sh && python3 -m introspector`
 - `auto_clean`: `0` (prevents output deletion)
 - `write_mode`: `True` (allows writing analysis JSON)
 - `container_name`: `{original_name}_analysis`

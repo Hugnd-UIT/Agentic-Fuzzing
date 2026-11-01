@@ -3,7 +3,7 @@
 import os
 import orjson
 from project_utils import ProjectUtils
-from show_code_coverage import LLVM_COV_JSON_FILE_NAME, SOURCE_COVERAGE_DIR_NAME
+from cov_show import LLVM_COV_JSON_FILE_NAME, SOURCE_COVERAGE_DIR_NAME
 import argparse
 BLOCKER_PAGE_SIZE = 30
 

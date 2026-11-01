@@ -7,7 +7,7 @@ from typing import List, Dict, Tuple, Optional
 import networkx as nx
 from dataclasses import dataclass
 from project_utils import ProjectUtils, print_debug
-from header_analysis import get_public_apis
+from header_util import get_public_apis
 import argparse
 import cxxfilt
 

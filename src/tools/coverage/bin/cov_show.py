@@ -501,7 +501,7 @@ class CoverageUtils:
         CoverageUtils.export_llvm_cov_summary(fuzz_target, coverage_dir, summary_file)
 
         coverage_util_cmd = [
-            "coverage_utils_process",
+            "cov_process",
             "-v",
             "post_process",
             "-src-root-dir=/",

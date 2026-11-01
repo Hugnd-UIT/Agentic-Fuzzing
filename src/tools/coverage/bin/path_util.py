@@ -1,4 +1,4 @@
-# simple_path_utils.py - Simplified path utilities for FuzzAgent
+# path_util.py - Simplified path utilities for FuzzAgent
 import re
 from typing import List, Union
 

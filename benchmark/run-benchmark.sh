@@ -12,5 +12,5 @@ if [[ "$FUZZ_EXIT_CODE" -ne 0 && "$FUZZ_EXIT_CODE" -ne 124 ]]; then
 fi
 
 echo "Benchmark complete. Exporting full code coverage."
-bash /root/agentic-fuzzing/src/tools/copy-tools.sh
+bash /root/agentic-fuzzing/src/tools/copy_tools.sh
 exec python3 -m introspector

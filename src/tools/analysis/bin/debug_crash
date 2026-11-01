@@ -66,7 +66,7 @@ def main():
 
     os.environ["GDB_HISTORY_FILE"] = history_file
     
-    driver_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gdb_json_debugger.py")
+    driver_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gdb_json.py")
 
     try:
         cmd = ["gdb", "-q", "--batch", "-x", driver_script, "--args", args.fuzz_target_binary, args.crash_artifact]
