@@ -6,6 +6,7 @@ import subprocess
 import shutil
 from typing import List
 import sys
+import re
 from project_utils import DEFAULT_DICTIONARY_FILE, FuzzerExecutionState, FuzzingEngine, ProjectUtils, BASIC_SYMBOLS, SANITIZER_SYMBOLS, COVERAGE_SYMBOLS, get_fuzzing_engine
 from enum import Enum
 
@@ -75,6 +76,22 @@ class TaskQueue:
 
 
 TASKs = TaskQueue()
+
+
+def get_crash_summary(fuzzer_id: int) -> str:
+    """Extract brief crash summary from crash report if available."""
+    try:
+        report_dir = ProjectUtils.get_project_crash_report_dir()
+        report_file = os.path.join(report_dir, f"crash_{fuzzer_id:03d}", "crash_report.md")
+        if os.path.exists(report_file):
+            with open(report_file, "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+            match = re.search(r"## Crash Summary\s*\n+([^\n#]+)", content)
+            if match:
+                return match.group(1).strip()
+    except Exception:
+        pass
+    return ""
 
 
 def check_directory() -> bool:
@@ -411,11 +428,15 @@ def check_fuzzer() -> bool:
             TASKs.add_sub_task(task_entry)
             return False
         if fuzzer_info.state == FuzzerExecutionState.HARNESS_BUG:
-            task_entry = TaskEntry("Check Fuzzers", Status.PENDING, f"The fuzzer {fuzzer_id:03d} found a harness bug during the last execution. Please fix the harness bug.")
+            summary = get_crash_summary(fuzzer_id)
+            summary_str = f": {summary}" if summary else ""
+            task_entry = TaskEntry("Check Fuzzers", Status.PENDING, f"The fuzzer {fuzzer_id:03d} found a harness bug{summary_str}. Please fix the harness bug.")
             TASKs.add_sub_task(task_entry)
             return False
         if fuzzer_info.state == FuzzerExecutionState.LIBRARY_BUG:
-            task_entry = TaskEntry("Check Fuzzers", Status.SUCCESS, f"The fuzzer {fuzzer_id:03d} found a library bug. The fuzzer and bugs are properly archived.")
+            summary = get_crash_summary(fuzzer_id)
+            summary_str = f": {summary}" if summary else ""
+            task_entry = TaskEntry("Check Fuzzers", Status.SUCCESS, f"The fuzzer {fuzzer_id:03d} found a library bug{summary_str}. The fuzzer and bugs are properly archived.")
             TASKs.add_sub_task(task_entry)
         if fuzzer_info.state == FuzzerExecutionState.PLATEAU:
             task_entry = TaskEntry("Check Fuzzers", Status.SUCCESS, f"The fuzzing for fuzzer {fuzzer_id:03d} is completed and the code coverage reached saturation.")

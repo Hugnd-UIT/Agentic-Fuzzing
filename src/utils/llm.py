@@ -51,6 +51,7 @@ def query_llm(
     tools: list = [],
     logger: Logger = logging.getLogger(__name__),
     tool_choice: Literal["auto", "required", "none"] = "required",
+    check_token_warning: bool = True,
 ) -> Tuple[str, ToolCall | None, ChatCompletionMessage | None]:
     """
     Query the LLM API and get the response.
@@ -86,14 +87,22 @@ def query_llm(
                 )
 
             # If the response is empty, retry
-            if not response or not response.choices[0]:
+            choices = getattr(response, "choices", None)
+            if not response or not choices or len(choices) == 0 or choices[0] is None:
                 logger.warning("Empty response from LLM. Retrying......")
-                time.sleep(60)
+                time.sleep(10)
                 continue
 
-            result = response.choices[0].message.content if response.choices[0].message.content is not None else ""
+            first_choice = choices[0]
+            first_message = getattr(first_choice, "message", None)
+            if first_message is None:
+                logger.warning("Empty message in LLM response. Retrying......")
+                time.sleep(10)
+                continue
 
-            tool_calls = response.choices[0].message.tool_calls
+            result = first_message.content if first_message.content is not None else ""
+
+            tool_calls = getattr(first_message, "tool_calls", None)
             # Extract function call information if available
             if tool_calls:
                 function_call = tool_calls[0].function.name
@@ -109,12 +118,13 @@ def query_llm(
 
             if result == "" and not tool_calls:
                 logger.warning("Empty response from LLM. Retrying......")
-                time.sleep(60)
+                time.sleep(10)
                 continue
 
             # Record the token usage for this API call
-            record_token_usage(response, logger)
-            out_messages = response.choices[0].message
+            out_messages = first_message
+            allow_warning = check_token_warning and not (tool_call and tool_call.function_call == "exit")
+            record_token_usage(response, logger, check_warning=allow_warning)
             break
         except TokenLenWillExceed:
             raise
@@ -147,7 +157,7 @@ def query_llm(
 
     return result, tool_call, out_messages
 
-def record_token_usage(response: openai.ChatCompletion, logger: Logger):
+def record_token_usage(response: openai.ChatCompletion, logger: Logger, check_warning: bool = True):
     """
     Record token usage.
     """
@@ -168,26 +178,26 @@ def record_token_usage(response: openai.ChatCompletion, logger: Logger):
                 prompt_tokens_details = response.usage.prompt_tokens_details
                 cached_token = prompt_tokens_details.cached_tokens or 0
 
-        logger.info(
-            f"Response Tokens\nCompletion Tokens:{current_completion_tokens}\nPrompt Tokens:{current_prompt_tokens}\nTotal Tokens:{current_total_tokens}\nCached Tokens:{cached_token}"
-        )
+            logger.info(
+                f"Response Tokens\nCompletion Tokens:{current_completion_tokens}\nPrompt Tokens:{current_prompt_tokens}\nTotal Tokens:{current_total_tokens}\nCached Tokens:{cached_token}"
+            )
 
-        if current_total_tokens >= CONFIG.LLMARGs["MAX_TOKEN_LEN"]:
-            raise TokenLenExceed(current_total_tokens, CONFIG.LLMARGs["MAX_TOKEN_LEN"])
+            # Update global token statistics
+            global global_prompt_tokens, global_completion_tokens, global_total_tokens
+            global_prompt_tokens += current_prompt_tokens
+            global_completion_tokens += current_completion_tokens
+            global_total_tokens += current_total_tokens
 
-        if current_total_tokens >= CONFIG.LLMARGs["MAX_TOKEN_LEN"] * CONFIG.LLMARGs["REMINDER_TOKEN_RATIO"]:
-            raise TokenLenWillExceed(current_total_tokens, CONFIG.LLMARGs["MAX_TOKEN_LEN"])
+            # Log global cumulative token usage
+            logger.debug(
+                f"Global Token Statistics\nCumulative Prompt Tokens:{global_prompt_tokens}\nCumulative Completion Tokens:{global_completion_tokens}\nCumulative Total Tokens:{global_total_tokens}"
+            )
 
-        # Update global token statistics
-        global global_prompt_tokens, global_completion_tokens, global_total_tokens
-        global_prompt_tokens += current_prompt_tokens
-        global_completion_tokens += current_completion_tokens
-        global_total_tokens += current_total_tokens
+            if current_total_tokens >= CONFIG.LLMARGs["MAX_TOKEN_LEN"]:
+                raise TokenLenExceed(current_total_tokens, CONFIG.LLMARGs["MAX_TOKEN_LEN"])
 
-        # Log global cumulative token usage
-        logger.debug(
-            f"Global Token Statistics\nCumulative Prompt Tokens:{global_prompt_tokens}\nCumulative Completion Tokens:{global_completion_tokens}\nCumulative Total Tokens:{global_total_tokens}"
-        )
+            if check_warning and current_total_tokens >= CONFIG.LLMARGs["MAX_TOKEN_LEN"] * CONFIG.LLMARGs["REMINDER_TOKEN_RATIO"]:
+                raise TokenLenWillExceed(current_total_tokens, CONFIG.LLMARGs["MAX_TOKEN_LEN"])
 
 def get_global_token_stats():
     """

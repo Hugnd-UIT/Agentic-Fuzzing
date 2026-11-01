@@ -39,6 +39,7 @@ class BaseAgent(ABC):
     def __init__(self):
         self.summarizer = AgentSummarizer()
         self.history_processor = HistoryProcessor(logger=self.logger)
+        self.token_warning_sent = False
 
     def get_agent_name(self) -> str:
         """Get Agent name"""
@@ -91,6 +92,7 @@ class BaseAgent(ABC):
         reminder_messages += "[IMPORTANT!][WARNING!] To ensure smooth operation, please summarize the previous conversation concisely right now, focusing on key points and important information only.\n"
         reminder_messages += "[IMPORTANT!][WARNING!] Then directly invoke the 'exit' tool call with the summary as the argument to terminate the agent execution!\n"
         self.history_processor.extend_user_msg(content=reminder_messages)
+        self.token_warning_sent = True
     
     def handle_token_exceed(self, current_len: int, max_len: int):
         self.logger.error(f"[!] ERROR:Token length exceeded! Current: {current_len}, Max allowed: {max_len}. Terminating agent execution.")
@@ -102,6 +104,7 @@ class BaseAgent(ABC):
     def run(self, input_msg: str):
         self.logger.debug(msg=f"System prompt: {self.get_system_prompt()}")
         self.logger.info(msg=f"User input: {input_msg}")
+        self.token_warning_sent = False
 
         # Get historical summaries for the target agent
         # historical_context = self.summarizer.format_history_for_agent(self.get_agent_name(), max_count=3)
@@ -126,7 +129,8 @@ class BaseAgent(ABC):
                     messages=self.history_processor.get_messages(),
                     tools=self.tools,
                     logger=self.logger,
-                    tool_choice="auto"
+                    tool_choice="auto",
+                    check_token_warning=not self.token_warning_sent
                 )
             except TokenLenWillExceed as e:
                 self.handle_token_will_exceed(e.current_len, e.max_len)
@@ -150,7 +154,7 @@ class BaseAgent(ABC):
                             self.exit_reason = self.register_agent_post_call(exit_reason=str(arguments))
                             self.logger.info(msg=f"Agent forced to exit with exit reason: {self.exit_reason}")
                             break
-                        if not self.is_agent_task_completed():
+                        if not self.is_agent_task_completed() and not self.token_warning_sent:
                             continue
                         self.exit_reason = self.register_agent_post_call(exit_reason=str(arguments))
                         self.logger.info(msg=f"Agent exit reason: {self.exit_reason}")
