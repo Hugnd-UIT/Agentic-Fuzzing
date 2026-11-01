@@ -10,7 +10,7 @@ from src.utils.project import get_project_cache_dir
 import os
 import json
 
-class DictionaryAgent(BaseAgent):
+class DictionaryGeneratorAgent(BaseAgent):
     logger = get_logger("Dictionary Agent")
     tools: List[dict] = API_TOOL_CALLS.get_tool_calls(
         [
@@ -89,4 +89,4 @@ class DictionaryAgent(BaseAgent):
             return False
         return True
 
-DictionaryGeneratorAgent = DictionaryAgent
+DictionaryGeneratorAgent = DictionaryGeneratorAgent

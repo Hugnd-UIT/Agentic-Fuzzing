@@ -10,7 +10,7 @@ from src.tools.api import API_TOOL_CALLS
 from src.utils.project import get_project_cache_dir
 import json
 
-class SeedAgent(BaseAgent):
+class SeedGeneratorAgent(BaseAgent):
     logger = get_logger("Seed Agent")
     tools: List[dict] = API_TOOL_CALLS.get_tool_calls(
         [
@@ -88,4 +88,4 @@ class SeedAgent(BaseAgent):
             return False
         return True
 
-SeedGeneratorAgent = SeedAgent
+SeedGeneratorAgent = SeedGeneratorAgent

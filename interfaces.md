@@ -455,7 +455,7 @@ tools:
       - name: agent_name
         type: string
         description: The name of the agent to send the task to.
-        enum: ["BuilderAgent", "DictionaryAgent", "SeedAgent", "HarnessAgent", "CoverageAnalyzerAgent", "FuzzerExecutorAgent", "CrashAnalyzerAgent"]
+        enum: ["BuilderAgent", "DictionaryGeneratorAgent", "SeedGeneratorAgent", "HarnessAgent", "CoverageAnalyzerAgent", "FuzzerAgent", "CrashAnalyzerAgent"]
         required: true
       - name: task_description
         type: string

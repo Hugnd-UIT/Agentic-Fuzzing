@@ -82,10 +82,10 @@ def get_agent_addresses():
     addresses = []
     agents_map = [
         ("BuilderAgent", ["BuilderAgent"]),
-        ("DictionaryAgent", ["DictionaryGeneratorAgent", "DictionaryAgent"]),
-        ("SeedAgent", ["SeedGeneratorAgent", "SeedAgent"]),
+        ("DictionaryGeneratorAgent", ["DictionaryGeneratorAgent"]),
+        ("SeedGeneratorAgent", ["SeedGeneratorAgent"]),
         ("HarnessAgent", ["HarnessAgent"]),
-        ("FuzzerExecutorAgent", ["FuzzerAgent", "FuzzerExecutorAgent"]),
+        ("FuzzerAgent", ["FuzzerAgent"]),
         ("CrashAnalyzerAgent", ["CrashAnalyzerAgent"]),
         ("CoverageAnalyzerAgent", ["CoverageAnalyzerAgent"]),
     ]

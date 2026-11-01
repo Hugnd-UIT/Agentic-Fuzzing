@@ -12,10 +12,10 @@ from typing import List
 import logging
 from src.agents.BuilderAgent.agent import BuilderAgent
 from src.agents.HarnessAgent.agent import HarnessAgent
-from src.agents.FuzzerAgent.agent import FuzzerExecutorAgent
+from src.agents.FuzzerAgent.agent import FuzzerAgent
 from src.agents.CrashAnalyzerAgent.agent import CrashAnalyzerAgent
-from src.agents.DictionaryGeneratorAgent.agent import DictionaryAgent
-from src.agents.SeedGeneratorAgent.agent import SeedAgent
+from src.agents.DictionaryGeneratorAgent.agent import DictionaryGeneratorAgent
+from src.agents.SeedGeneratorAgent.agent import SeedGeneratorAgent
 from src.agents.CoverageAnalyzerAgent.agent import CoverageAnalyzerAgent
 from src.tools.api import API_TOOL_CALLS
 from src.utils.config import CONFIG
@@ -44,20 +44,20 @@ class ManagerAgent(BaseAgent):
         self.class_map = {
             "BuilderAgent": BuilderAgent(),
             "HarnessAgent": HarnessAgent(),
-            "FuzzerExecutorAgent": FuzzerExecutorAgent(),
+            "FuzzerAgent": FuzzerAgent(),
             "CrashAnalyzerAgent": CrashAnalyzerAgent(),
-            "DictionaryAgent": DictionaryAgent(),
-            "SeedAgent": SeedAgent(),
+            "DictionaryGeneratorAgent": DictionaryGeneratorAgent(),
+            "SeedGeneratorAgent": SeedGeneratorAgent(),
             "CoverageAnalyzerAgent": CoverageAnalyzerAgent(),
         }
         if CONFIG.ACIARGs.DISABLE_COVERAGE_GUIDANCE:
             self.class_map = {
                 "BuilderAgent": BuilderAgent(),
                 "HarnessAgent": HarnessAgent(),
-                "FuzzerExecutorAgent": FuzzerExecutorAgent(),
+                "FuzzerAgent": FuzzerAgent(),
                 "CrashAnalyzerAgent": CrashAnalyzerAgent(),
-                "DictionaryAgent": DictionaryAgent(),
-                "SeedAgent": SeedAgent(),
+                "DictionaryGeneratorAgent": DictionaryGeneratorAgent(),
+                "SeedGeneratorAgent": SeedGeneratorAgent(),
             }
             self.agents = [agent for agent in self.agents if agent.name != "CoverageAnalyzerAgent"]
             

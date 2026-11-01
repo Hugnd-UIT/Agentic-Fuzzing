@@ -8,7 +8,7 @@ from src.tools.api import API_TOOL_CALLS
 import logging
 import re
 
-class FuzzerExecutorAgent(BaseAgent):
+class FuzzerAgent(BaseAgent):
     logger = get_logger("Fuzzer Executor Agent")
     tools: List[dict] = API_TOOL_CALLS.get_tool_calls(
         [
@@ -45,4 +45,4 @@ class FuzzerExecutorAgent(BaseAgent):
             return True
         return False
 
-FuzzerAgent = FuzzerExecutorAgent
+FuzzerAgent = FuzzerAgent
