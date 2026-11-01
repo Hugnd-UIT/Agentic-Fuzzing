@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source defaults.sh
+source defaults
 
 # @yaml
 # signature: search_dir <search_term> [<dir>]

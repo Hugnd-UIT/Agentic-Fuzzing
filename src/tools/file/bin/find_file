@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source defaults.sh
+source defaults
 
 # @yaml
 # signature: find_file <file_name> [<dir>]

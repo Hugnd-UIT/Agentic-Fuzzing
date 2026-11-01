@@ -1,7 +1,7 @@
 import os
 from dataclasses import dataclass
 
-from .errors import Error
+from .catch import Error
 
 
 @dataclass
@@ -56,7 +56,7 @@ class Config:
         """
         
         if not os.path.isdir(path):
-            from .errors import PathMissingError
+            from .catch import PathMissingError
 
             raise PathMissingError(name, path)
 
@@ -66,7 +66,7 @@ class Config:
         """
         
         if not os.path.isfile(path):
-            from .errors import PathMissingError
+            from .catch import PathMissingError
 
             raise PathMissingError(name, path)
 

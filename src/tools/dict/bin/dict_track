@@ -45,7 +45,7 @@ def complete_web_retrieve_progress(task_kind: str, project_names: list[str]):
 
 if __name__ == "__main__":
     print("[*] Tracking the web retrieve progress...")
-    parser = argparse.ArgumentParser(description="Track the web retrieve progress.")
+    parser = argparse.ArgumentParser("dict_track", description="Track the web retrieve progress.")
     parser.add_argument("task_kind", type=str, help="The task kind to track the web retrieve progress.", choices=["dictionary", "seed"])
     parser.add_argument("action", type=str, help="The action to track the web retrieve progress.", choices=["record_tasks", "complete_tasks"])
     parser.add_argument("project_names", type=str, help="The project names to track the web retrieve progress. Use comma to separate multiple project names.")

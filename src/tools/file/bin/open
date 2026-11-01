@@ -2,7 +2,7 @@
 
 # Source the defaults to get helper functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/defaults.sh"
+source "$SCRIPT_DIR/defaults"
 
 # @yaml
 # signature: open "<path>" [<line_number>]

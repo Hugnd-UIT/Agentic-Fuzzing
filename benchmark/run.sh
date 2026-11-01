@@ -26,6 +26,7 @@ declare -A TARGET_REPOS=(
     [protobuf]=https://github.com/protocolbuffers/protobuf.git
     [opencv]=https://github.com/opencv/opencv.git
     [softether]=https://github.com/SoftEtherVPN/SoftEtherVPN.git
+    [nlohmann-json]=https://github.com/nlohmann/json.git
 )
 
 if [[ -t 1 && -z "${NO_COLOR+x}" && "${TERM:-}" != "dumb" ]]; then
@@ -160,7 +161,7 @@ printf '  Source:   %s\n' "$(color_path "$TARGET_DIR")"
 printf '  Results:  %s\n' "$(color_path "$RAW_OUTPUT_DIR")"
 printf '  Container: %s\n\n' "$CONTAINER_NAME"
 
-if ! docker compose -p "$CONTAINER_NAME" -f "$ROOT_DIR/docker-template.yml" up -d; then
+if ! docker compose -p "$CONTAINER_NAME" -f "$ROOT_DIR/docker/docker-compose.yml" up -d; then
     printf '\nCould not start the benchmark container. Check the docker output above.\n' >&2
     exit 1
 fi

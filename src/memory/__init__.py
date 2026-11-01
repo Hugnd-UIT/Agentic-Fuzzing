@@ -3,12 +3,8 @@ from pathlib import Path
 
 _memory_dir = Path(__file__).parent
 
-# Load history-processor.py
-_hp_path = _memory_dir / "history-processor.py"
-_hp_spec = importlib.util.spec_from_file_location("history_processor", _hp_path)
-_hp_mod = importlib.util.module_from_spec(_hp_spec)
-_hp_spec.loader.exec_module(_hp_mod)
-HistoryProcessor = getattr(_hp_mod, "HistoryProcessor")
+from .history import History
+from .summary import Summary
 
 # Load short-term-memory.py
 _stm_path = _memory_dir / "short-term-memory.py"
@@ -24,6 +20,9 @@ _ltm_mod = importlib.util.module_from_spec(_ltm_spec)
 _ltm_spec.loader.exec_module(_ltm_mod)
 LongTermMessage = getattr(_ltm_mod, "LongTermMessage")
 
-from .summarizer import AgentSummarizer
-
-__all__ = ["HistoryProcessor", "ShortTermMessage", "LongTermMessage", "AgentSummarizer"]
+__all__ = [
+    "History",
+    "Summary",
+    "ShortTermMessage",
+    "LongTermMessage",
+]

@@ -3,10 +3,9 @@ from openai import OpenAI
 import httpx
 from abc import ABC, abstractmethod
 from src.utils.config import CONFIG
-from src.memory.summarizer import AgentSummarizer
+from src.memory import History, Summary
 from typing import List
 from src.aci.factory import ACI as ACIPromptFactory
-from src.memory import HistoryProcessor
 from src.utils.llm import query_llm
 from src.utils.aci import ACI, InvalidResponseFormatError
 from src.utils.log import get_logger
@@ -37,8 +36,10 @@ class BaseAgent(ABC):
     MAX_AGENT_EPOCHS = CONFIG.LLMARGs.MAX_AGENT_EPOCHS
 
     def __init__(self):
-        self.summarizer = AgentSummarizer()
-        self.history_processor = HistoryProcessor(logger=self.logger)
+        self.summary = Summary()
+        self.summarizer = self.summary
+        self.history = History(logger=self.logger)
+        self.history_processor = self.history
         self.token_warning_sent = False
 
     def get_agent_name(self) -> str:

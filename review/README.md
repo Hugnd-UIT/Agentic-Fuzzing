@@ -1,4 +1,4 @@
-# introspector
+# review
 
 Post-fuzzing analysis package for Agentic Fuzzing. Runs inside the analysis container
 after the core fuzzing engine finishes, producing structured JSON output.
@@ -9,25 +9,25 @@ after the core fuzzing engine finishes, producing structured JSON output.
 # Set the output directory (usually done automatically by the Controller)
 export OUTPUT=/path/to/fuzzing/output/project_name
 
-# Run the remaining analysis step
-python3 -m introspector
+# Run the review analysis step
+python3 -m review
 ```
 
 ## Architecture
 
-Each remaining analysis module exposes a single `analyze() -> dict | None`
+Each analysis module exposes a single `analyze() -> dict | None`
 method. The `__main__` entry-point iterates over the registered steps with
 per-step error isolation — one failure does not block the others.
 
 ```
-introspector/
+review/
   __init__.py              # Package marker
-  __main__.py              # Entry-point: python3 -m introspector
+  __main__.py              # Entry-point: python3 -m review
   config.py                # Config — unified path discovery from $OUTPUT
-  errors.py                # Error / PathMissingError / AnalysisStepError
-  output.py                # write_json() + try_write_png() (matplotlib optional)
-  logging_setup.py         # configure_logging() / get_logger()
-  reply.py   # Reply — final coverage summary
+  catch.py                 # Error / PathMissingError / AnalysisStepError
+  report.py                # write_json() + try_write_png() (matplotlib optional)
+  log.py                   # configure_logging() / get_logger()
+  reply.py                 # Reply — final coverage summary
 ```
 
 ## Environment Variables
@@ -75,7 +75,7 @@ data into the final coverage summary that the Storage normalizer consumes.
 ```
 
 **Dependencies:** `cov_overview` in PATH (copied by
-`copy_tools.sh`).
+`copy-tools.sh`).
 
 > The JSON examples below this section in older revisions described
 > `coverage_over_time`, `token_cost`, `instr_classify`, and `agent_gantt`.
@@ -99,7 +99,7 @@ The Controller automatically launches an analysis container after a fuzzing
 task completes successfully. It reuses the same Docker image and compose
 template, changing only:
 
-- `command`: `bash /root/Agentic Fuzzing/src/tools/copy_tools.sh && python3 -m introspector`
+- `command`: `bash /root/Agentic Fuzzing/src/tools/copy-tools.sh && python3 -m review`
 - `auto_clean`: `0` (prevents output deletion)
 - `write_mode`: `True` (allows writing analysis JSON)
 - `container_name`: `{original_name}_analysis`

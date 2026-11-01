@@ -1,14 +1,14 @@
 tools:
-  check_dict:
-    signature: check_dict "<dictionary_file>"
+  dict_check:
+    signature: dict_check "<dictionary_file>"
     docstring: Validate whether the format of the dictionary file is legal.
     arguments:
       - name: dictionary_file
         type: string
         description: The path of dictionary file you want to validate.
         required: true
-  track_dl:
-    signature: track_dl "<task_kind>" "<action>" "<project_names>"
+  dict_track:
+    signature: dict_track "<task_kind>" "<action>" "<project_names>"
     docstring: Record and track the web retrieve progress for the given task kind and project names. 
     arguments:
       - name: task_kind

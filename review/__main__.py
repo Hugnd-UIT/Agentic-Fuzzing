@@ -5,10 +5,10 @@ import time
 from typing import Any
 
 from .config import Config
-from .errors import Error
+from .catch import Error
 from . import Reply
-from .loggers import configure_logging, get_logger
-from .output import write_json
+from .log import configure_logging, get_logger
+from .report import write_json
 
 ANALYSIS_STEPS: list[tuple[str, str, type]] = [
     ("reply_full_coverage", "final-coverage.json", Reply),

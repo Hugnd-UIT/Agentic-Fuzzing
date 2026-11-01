@@ -11,9 +11,9 @@ tools:
       You still need to decide what to do next based on the process you have executed,
       the feedback you received, and the actual situation of your current working
       directory.
-  reduce_poc:
+  build_poc:
     timeout: 1200
-    signature: reduce_poc <fuzzer_id>
+    signature: build_poc <fuzzer_id>
     docstring:
       Minimize the harness code while retaining the crash-triggering behavior.
       The minimized harness will be compiled into a new fuzzer binary for you to further
@@ -77,8 +77,7 @@ tools:
         required: false
   report_crash:
     timeout: 10
-    signature:
-      report_crash "<fuzzer_id>" "<crash_artifact_path>" "<triage>"
+    signature: report_crash "<fuzzer_id>" "<crash_artifact_path>" "<triage>"
       "<content>"
     docstring:
       "Create a normalized crash report file for a given fuzzer and crash

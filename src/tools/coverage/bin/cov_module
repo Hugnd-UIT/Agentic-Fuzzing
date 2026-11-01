@@ -6,7 +6,7 @@ from cov_show import CoverageUtils
 from project_utils import ProjectUtils, print_debug
 import os
 import math
-from html_parser import HtmlTable
+from parser_util import HtmlTable
 
 class ModuleCovReport:
     COVERAGE_PAGE_SIZE = 50

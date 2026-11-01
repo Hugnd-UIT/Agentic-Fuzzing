@@ -4,7 +4,7 @@ import argparse
 import os
 import logging
 load_dotenv(".env") # Load environment variables before importing other modules
-subprocess.run(["/bin/bash", os.path.join(os.path.dirname(__file__), "src/tools/copy_tools.sh")], check=True)
+subprocess.run(["/bin/bash", os.path.join(os.path.dirname(__file__), "src/tools/copy-tools.sh")], check=True)
 from src.agents.ManagerAgent.agent import ManagerAgent
 from src.utils.config import get_agent_addresses
 from src.utils.config import CONFIG

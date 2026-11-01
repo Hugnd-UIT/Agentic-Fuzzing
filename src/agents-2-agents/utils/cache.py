@@ -1,17 +1,17 @@
-"""In Memory Cache utility."""
+"""In-memory Cache utility."""
 
 import threading
 import time
 from typing import Any, Dict, Optional
 
 
-class Memory:
+class Cache:
     """A thread-safe singleton class to manage cache data.
 
     Ensures only one instance of the cache exists across the application.
     """
 
-    _instance: Optional["Memory"] = None
+    _instance: Optional["Cache"] = None
     _lock: threading.Lock = threading.Lock()
     _initialized: bool = False
 
@@ -21,7 +21,7 @@ class Memory:
         Uses a lock to ensure thread safety during the first instantiation.
 
         Returns:
-            The singleton instance of Memory.
+            The singleton instance of Cache.
         """
 
         if cls._instance is None:
@@ -112,3 +112,6 @@ class Memory:
             self._ttl.clear()
             return True
         return False
+
+
+__all__ = ["Cache"]
