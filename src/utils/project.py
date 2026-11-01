@@ -29,9 +29,9 @@ def copy_project_source():
     """
     if not os.path.exists(_src_root_dir):
         return
+    if os.path.exists(_fuzz_src_dir) and os.listdir(_fuzz_src_dir):
+        return
     print("[+] Copying project source code...")
-    if os.path.exists(_fuzz_src_dir):
-        shutil.rmtree(_fuzz_src_dir)
     shutil.copytree(_src_root_dir, _fuzz_src_dir)
 
     print(f"[+] The target project has been copied to {_fuzz_src_dir}.\n$SRC={_fuzz_src_dir}")
@@ -49,7 +49,7 @@ else:
     PROJECT_VMS = VMS(_project_output_dir) if os.path.exists(_project_output_dir) else None
 
 def is_autoclean_enabled():
-    if os.environ.get("AGENTIC_FUZZING_AUTO_CLEAN", os.environ.get("FUZZAGENT_AUTO_CLEAN", "0")) == "1":
+    if os.environ.get("AGENTIC_FUZZING_AUTO_CLEAN", "0") == "1":
         return True
     return False
 

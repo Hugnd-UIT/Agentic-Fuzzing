@@ -14,4 +14,3 @@ done
 # copy utils/bin to /usr/local/bin
 rm -f /usr/local/bin/project_utils.py
 cp  "/root/agentic-fuzzing/src/tools/utils/bin/project_utils.py" /usr/local/bin/project_utils.py 2>/dev/null || true
-cp "/src/" "/root/src/" -r 2>/dev/null || true

@@ -18,6 +18,11 @@ def _optional_llm_timeout() -> int | None:
     raw = os.environ.get("LLM_REPLY_TIMEOUT", "600").strip().lower()
     return None if raw in {"none", "unlimited"} else int(raw)
 
+def _normalize_llm_base(url: str) -> str:
+    if os.path.exists("/.dockerenv") or os.environ.get("CONTAINER_NAME"):
+        return url.replace("://localhost:", "://host.docker.internal:").replace("://127.0.0.1:", "://host.docker.internal:")
+    return url
+
 class ACIVariables(BaseModel):
     CURRENT_FILE: str = ""
     CURRENT_LINE: int = 0
@@ -32,7 +37,7 @@ class ACIVariables(BaseModel):
         return getattr(self, key)
 
 class LLMArgs(BaseModel):
-    OPENAI_API_BASE: str = os.environ["OPENAI_BASE_URL"]
+    OPENAI_API_BASE: str = _normalize_llm_base(os.environ["OPENAI_BASE_URL"])
     OPENAI_MODEL: str = os.environ["OPENAI_MODEL"]
     LLM_REPLY_TIMEOUT: int | None = _optional_llm_timeout()
     LLM_TEMPERATURE: float = float(os.environ.get("LLM_TEMPERATURE", 0.6))

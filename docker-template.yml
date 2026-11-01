@@ -7,7 +7,7 @@ services:
     tty: true
     command: /bin/bash -c "${COMMAND}"
     volumes:
-      - ${AGENTIC_FUZZING_DIR:-${FUZZAGENT_DIR}}:/root/agentic-fuzzing:${WRITE_MODE}
+      - ${AGENTIC_FUZZING_DIR}:/root/agentic-fuzzing:${WRITE_MODE}
       - ${RAW_OUTPUT_DIR}:/root/agentic-fuzzing/output/${REPO_BASE_NAME}
       - ${SRC_DIR}:/src/${REPO_BASE_NAME}
     security_opt:
@@ -17,10 +17,10 @@ services:
       - NET_ADMIN
     environment:
       - AGENTIC_FUZZING_AUTO_CLEAN=${AGENTIC_FUZZING_AUTO_CLEAN:-0}
-      - FUZZAGENT_AUTO_CLEAN=${AGENTIC_FUZZING_AUTO_CLEAN:-0}
       - SRC=/root/src/${REPO_BASE_NAME}
       - OUTPUT=/root/agentic-fuzzing/output/${REPO_BASE_NAME}
       - AFL_SKIP_CPUFREQ=1
+      - PYTHONUNBUFFERED=1
       - UV_PROJECT_ENVIRONMENT=/root/.venv
       - UV_LINK_MODE=copy
       - FUZZING_ENGINE=${FUZZING_ENGINE}
