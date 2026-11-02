@@ -381,16 +381,221 @@ def copy_afl_crashes_to_crash_dir(fuzzer_id: int):
         return
     os.makedirs(crash_dir, exist_ok=True)
 
-    src_crash = crash_files[0]
-    with open(src_crash, "rb") as f:
-        md5sum = hashlib.md5(f.read()).hexdigest()
+    copied = 0
+    for src_crash in crash_files[:50]:
+        try:
+            with open(src_crash, "rb") as f:
+                md5sum = hashlib.md5(f.read()).hexdigest()
+            dst_crash = os.path.join(crash_dir, f"crash-{md5sum}")
+            if not os.path.exists(dst_crash):
+                shutil.copy2(src_crash, dst_crash)
+                copied += 1
+        except Exception:
+            pass
+    print_debug(f"[+] Copied {copied} AFL crash(es) to {crash_dir}")
 
-    dst_crash = os.path.join(crash_dir, f"crash-{md5sum}")
-    if os.path.exists(dst_crash):
-        return
+# ==============================================================================
+# Zero false positive engine
+# ==============================================================================
 
-    shutil.copy2(src_crash, dst_crash)
-    print_debug(f"[+] Copied AFL crash {src_crash} to {dst_crash}")
+CRASH_SIGNATURES = frozenset({
+    # AddressSanitizer
+    "addresssanitizer",
+    "heap-buffer-overflow",
+    "stack-buffer-overflow",
+    "global-buffer-overflow",
+    "heap-use-after-free",
+    "stack-use-after-free",
+    "use-after-poison",
+    "double-free",
+    "alloc-dealloc-mismatch",
+    "stack-overflow",
+    "dynamic-stack-buffer-overflow",
+    "container-overflow",
+
+    # MemorySanitizer
+    "memorysanitizer",
+    "use-of-uninitialized-value",
+    
+    # UndefinedBehaviorSanitizer
+    "undefinedbehaviorsanitizer",
+    "runtime error:",
+
+    # Generic / libFuzzer / OSS-Fuzz crash wrappers
+    "==error:",
+    "deadly signal",
+    "libfuzzer: out-of-memory",
+    "==aborting",
+
+    # Explicit crash assertions
+    "assertion failed",
+    "check failed:",
+})
+
+CRASH_SIGNAL_RETURN_CODES = frozenset({134, 136, 137, 138, 139})
+
+STACK_FRAME_RE = re.compile(
+    r"^\s*#(\d+)\s+(?:0x[0-9a-fA-F]+\s+)?(?:in\s+)?(.*?)\s+([^:\s]+):(\d+)(?::(\d+))?",
+    re.MULTILINE,
+)
+
+UBSAN_ERROR_RE = re.compile(
+    r"^([^:\s]+):(\d+)(?::(\d+))?:\s*runtime error:\s*(.+)",
+    re.MULTILINE,
+)
+
+ASAN_DEDUP_TOKEN_RE = re.compile(r"^\s*DEDUP_TOKEN:\s*(\S+)", re.MULTILINE)
+
+RUNTIME_WRAPPER_PATTERNS = [
+    "__asan", "__ubsan", "__sanitizer", "__pthread", "libc.so",
+    "libpthread", "libstdc++", "abort", "raise", "ReportGenericError",
+    "ScopedInErrorReport", "Die", "__cxa_throw"
+]
+
+def is_genuine_crash(output: str | None, returncode: int | None) -> bool:
+    if output:
+        out_lower = output.lower()
+        if any(sig in out_lower for sig in CANONICAL_CRASH_SIGNATURES):
+            return True
+    if returncode is not None and (returncode >= 128 or returncode in CRASH_SIGNAL_RETURN_CODES):
+        return True
+    return False
+
+def extract_crashing_frame_and_token(output: str, src_dir: str, harness_path: str) -> dict:
+    dedup_token_match = ASAN_DEDUP_TOKEN_RE.search(output)
+    dedup_token = dedup_token_match.group(1) if dedup_token_match else None
+
+    # Check ASan stack frames
+    for m in STACK_FRAME_RE.finditer(output):
+        idx, func, file_path, line, col = m.groups()
+        if any(rw in func or rw in file_path for rw in RUNTIME_WRAPPER_PATTERNS):
+            continue
+        norm_file = os.path.normpath(file_path).replace("\\", "/")
+        norm_src = os.path.normpath(src_dir).replace("\\", "/")
+        norm_harness = os.path.normpath(harness_path).replace("\\", "/") if harness_path else ""
+
+        is_harness = (
+            "harness" in norm_file or "poc.cpp" in norm_file or
+            "LLVMFuzzerTestOneInput" in func or (norm_harness and norm_harness in norm_file) or
+            "/fuzzers/fuzzer_" in norm_file
+        )
+        is_library = norm_file.startswith(norm_src) or "/src/" in norm_file
+
+        token = dedup_token or f"{func}:{norm_file}:{line}"
+        return {
+            "found": True,
+            "func": func.strip(),
+            "file": norm_file,
+            "line": int(line) if line.isdigit() else 0,
+            "is_harness": is_harness,
+            "is_library": is_library,
+            "token": token
+        }
+
+    # Check UBSan single-line
+    ubsan_m = UBSAN_ERROR_RE.search(output)
+    if ubsan_m:
+        file_path, line, col, desc = ubsan_m.groups()
+        norm_file = os.path.normpath(file_path).replace("\\", "/")
+        norm_src = os.path.normpath(src_dir).replace("\\", "/")
+        norm_harness = os.path.normpath(harness_path).replace("\\", "/") if harness_path else ""
+        is_harness = "harness" in norm_file or "poc.cpp" in norm_file or (norm_harness and norm_harness in norm_file) or "/fuzzers/fuzzer_" in norm_file
+        is_library = norm_file.startswith(norm_src) or "/src/" in norm_file
+        token = dedup_token or f"ubsan:{norm_file}:{line}"
+        return {
+            "found": True,
+            "func": desc.strip(),
+            "file": norm_file,
+            "line": int(line) if line.isdigit() else 0,
+            "is_harness": is_harness,
+            "is_library": is_library,
+            "token": token
+        }
+
+    return {"found": False, "is_harness": False, "is_library": False, "token": "unknown"}
+
+def pre_triage_and_dedup_crashes(fuzzer_id: int) -> dict:
+    crash_dir = ProjectUtils.get_fuzzer_crash_dir(fuzzer_id)
+    fuzzer_binary = ProjectUtils.get_fuzzer_binary_by_id(fuzzer_id)
+    harness_path = ProjectUtils.get_harness_path_by_id(fuzzer_id)
+    try:
+        src_dir = ProjectUtils.get_source_code_dir()
+    except Exception:
+        src_dir = os.environ.get("SRC", "/src")
+
+    if not os.path.exists(crash_dir):
+        return {"verdict": "NON_CRASH", "count": 0}
+
+    crash_files = [
+        os.path.join(crash_dir, f) for f in os.listdir(crash_dir)
+        if os.path.isfile(os.path.join(crash_dir, f)) and not f.startswith(".")
+    ]
+
+    if not crash_files:
+        return {"verdict": "NON_CRASH", "count": 0}
+
+    print(f"[*] Analyzing {len(crash_files)} crash file(s)...")
+
+    env = os.environ.copy()
+    env["ASAN_OPTIONS"] = "detect_leaks=0:abort_on_error=1:symbolize=1"
+    env["UBSAN_OPTIONS"] = "print_stacktrace=1:halt_on_error=1:symbolize=1"
+
+    library_crashes_by_token = {}
+    harness_crashes = []
+    fake_crashes = []
+
+    # Test crash artifacts
+    for cfile in crash_files:
+        try:
+            proc = subprocess.run([fuzzer_binary, cfile], capture_output=True, timeout=3, env=env, text=True)
+            out = proc.stdout + "\n" + proc.stderr
+            ret = proc.returncode
+            if not is_genuine_crash(out, ret):
+                fake_crashes.append(cfile)
+                continue
+
+            frame_info = extract_crashing_frame_and_token(out, src_dir, harness_path)
+            if frame_info["is_harness"]:
+                harness_crashes.append((cfile, frame_info))
+            else:
+                tok = frame_info["token"]
+                if tok not in library_crashes_by_token:
+                    library_crashes_by_token[tok] = (cfile, frame_info)
+        except Exception:
+            continue
+
+    # Clean up non-crash files
+    for fc in fake_crashes:
+        try:
+            os.remove(fc)
+        except Exception:
+            pass
+
+    # If genuine library crashes exist: keep only representative crash files per unique token!
+    if library_crashes_by_token:
+        kept_files = set(cfile for cfile, _ in library_crashes_by_token.values())
+        for cfile in crash_files:
+            if cfile not in kept_files:
+                try:
+                    os.remove(cfile)
+                except Exception:
+                    pass
+        return {
+            "verdict": "LIBRARY_BUG",
+            "unique_bugs": len(library_crashes_by_token),
+            "findings": library_crashes_by_token
+        }
+    elif harness_crashes:
+        first_harness = harness_crashes[0][1]
+        return {
+            "verdict": "HARNESS_BUG",
+            "reason": f"Frame #0 is in harness ({first_harness['file']}:{first_harness['line']} in `{first_harness['func']}`)"
+        }
+    else:
+        return {
+            "verdict": "NON_CRASH",
+            "count": 0
+        }
 
 def execution_until_coverage_saturation(proc: subprocess.Popen, fuzzer_id: int, fuzz_log: str, fork: bool, all_procs: list = None) -> tuple[bool, bool]: # return: is_plateau, need_fork
     print(f"[+] Starting fuzzer monitoring with MAX_RUNNING_TIME={MAX_RUNNING_TIME}s, INTERVAL={INTERVAL}s")
@@ -428,14 +633,32 @@ def execution_until_coverage_saturation(proc: subprocess.Popen, fuzzer_id: int, 
                 crash_dir = ProjectUtils.get_fuzzer_crash_dir(fuzzer_id)
                 crash_count = len(os.listdir(crash_dir)) if os.path.exists(crash_dir) else 0
                 if crash_count > 0:
-                    print(f"[-] A fuzzing process exited due to crash! Found {crash_count} crash(es).")
+                    print(f"[-] A fuzzing process exited due to crash! Found {crash_count} crash file(s).")
                     fuzzer_info.execution_time = elapsed_time
-                    fuzzer_info.state = FuzzerExecutionState.CRASHED
                     fuzzer_info.finish_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
-                    ProjectUtils.save_fuzzer_profile(fuzz_profile)
-                    return False, False
+
+                    triage_result = pre_triage_and_dedup_crashes(fuzzer_id)
+                    verdict = triage_result.get("verdict")
+
+                    if verdict == "HARNESS_BUG":
+                        print(f"[!] REJECTED as HARNESS BUG!")
+                        print(f"[!] Reason: {triage_result.get('reason')}")
+                        fuzzer_info.state = FuzzerExecutionState.HARNESS_BUG
+                        ProjectUtils.save_fuzzer_profile(fuzz_profile)
+                        return False, False
+                    elif verdict == "NON_CRASH":
+                        print(f"[!] REJECTED as NO CRASH!")
+                        fuzzer_info.state = FuzzerExecutionState.PLATEAU
+                        ProjectUtils.save_fuzzer_profile(fuzz_profile)
+                        return True, False
+                    else:  # LIBRARY_BUG
+                        unique_count = triage_result.get("unique_bugs", 1)
+                        print(f"[+] VERIFIED as LIBRARY BUG ({unique_count} unique root cause(s))!")
+                        fuzzer_info.state = FuzzerExecutionState.CRASHED
+                        ProjectUtils.save_fuzzer_profile(fuzz_profile)
+                        return False, False
                 elif proc.poll() is not None:
-                    print(f"[-] ERROR: The main fuzzing process exited! Please check the log file and report the issue to CrashAnalyzer.")
+                    print(f"[-] ERROR: The main fuzzing process exited!")
                     fuzzer_info.execution_time = elapsed_time
                     fuzzer_info.state = FuzzerExecutionState.CRASHED
                     fuzzer_info.finish_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
