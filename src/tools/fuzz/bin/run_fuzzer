@@ -392,7 +392,7 @@ def copy_afl_crashes_to_crash_dir(fuzzer_id: int):
     shutil.copy2(src_crash, dst_crash)
     print_debug(f"[+] Copied AFL crash {src_crash} to {dst_crash}")
 
-def execution_until_coverage_saturation(proc: subprocess.Popen, fuzzer_id: int, fuzz_log: str, fork: bool) -> tuple[bool, bool]: # return: is_plateau, need_fork
+def execution_until_coverage_saturation(proc: subprocess.Popen, fuzzer_id: int, fuzz_log: str, fork: bool, all_procs: list = None) -> tuple[bool, bool]: # return: is_plateau, need_fork
     print(f"[+] Starting fuzzer monitoring with MAX_RUNNING_TIME={MAX_RUNNING_TIME}s, INTERVAL={INTERVAL}s")
     fuzz_profile = ProjectUtils.get_fuzzer_profile()
     fuzzer_info = fuzz_profile.fuzzers.get(fuzzer_id, None)
@@ -412,15 +412,35 @@ def execution_until_coverage_saturation(proc: subprocess.Popen, fuzzer_id: int, 
             time.sleep(10)
             sleep_seconds += 10
             elapsed_time += 10
-            if proc.poll() is not None:
-                print(f"[-] ERROR: The fuzzing process exited! Please check the log file and report the issue to CrashAnalyzer.")
-                fuzzer_info.execution_time = elapsed_time
-                fuzzer_info.state = FuzzerExecutionState.CRASHED
-                fuzzer_info.finish_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
-                ProjectUtils.save_fuzzer_profile(fuzz_profile)
+
+            crashed = False
+            if all_procs:
+                for p in all_procs:
+                    if p.poll() is not None:
+                        crashed = True
+                        break
+            elif proc.poll() is not None:
+                crashed = True
+
+            if crashed:
                 clean_slow_units(fuzzer_id)
                 copy_afl_crashes_to_crash_dir(fuzzer_id)
-                return False, False
+                crash_dir = ProjectUtils.get_fuzzer_crash_dir(fuzzer_id)
+                crash_count = len(os.listdir(crash_dir)) if os.path.exists(crash_dir) else 0
+                if crash_count > 0:
+                    print(f"[-] A fuzzing process exited due to crash! Found {crash_count} crash(es).")
+                    fuzzer_info.execution_time = elapsed_time
+                    fuzzer_info.state = FuzzerExecutionState.CRASHED
+                    fuzzer_info.finish_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
+                    ProjectUtils.save_fuzzer_profile(fuzz_profile)
+                    return False, False
+                elif proc.poll() is not None:
+                    print(f"[-] ERROR: The main fuzzing process exited! Please check the log file and report the issue to CrashAnalyzer.")
+                    fuzzer_info.execution_time = elapsed_time
+                    fuzzer_info.state = FuzzerExecutionState.CRASHED
+                    fuzzer_info.finish_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
+                    ProjectUtils.save_fuzzer_profile(fuzz_profile)
+                    return False, False
             if get_fuzzing_engine() == FuzzingEngine.AFLpp and sleep_seconds >= INTERVAL * 3:  # AFLpp only report edge level coverage, which is less fine-grained than the coverage of LibFuzzer. So we use a longer sleep interval to monitor its execution.
                 break
 
@@ -528,8 +548,8 @@ def get_cache_fuzzer_output_dir(fuzzer_id: int) -> str:
 
 # used only for low execution speed fuzzers (e.g., ffmpeg and libvpx), to avoid the fuzzing execution is hanged by some large corpus files for a long time (e.g., 1 min for an input).
 def speeding_libfuzzer_by_fork(cmd: list, envs: dict, fuzz_log: str, output_dir: str, fuzzer_id: int, crash_dir: str):
-    min_cpu_count = min(10, multiprocessing.cpu_count()/2)
-    cmd.append(f"-fork={min_cpu_count}")
+    num_cores = int(os.environ.get("AFL_NUM_CORES", "8"))
+    cmd.append(f"-fork={num_cores}")
     cmd.append("-keep_seed=1")
     with open(fuzz_log, "w") as f:
         proc = subprocess.Popen(cmd, env=envs, stdout=f, stderr=subprocess.STDOUT, cwd=output_dir, bufsize=1, text=True)
@@ -544,12 +564,12 @@ def speeding_libfuzzer_by_fork(cmd: list, envs: dict, fuzz_log: str, output_dir:
                 proc.wait()
 
 def speeding_afl_by_fork(cmd: list, envs: dict, fuzz_log: str, output_dir: str, fuzzer_id: int, crash_dir: str):
-    min_cpu_count = min(10, int(multiprocessing.cpu_count()/2)) - 1
+    num_cores = int(os.environ.get("AFL_NUM_CORES", "8"))
+    min_cpu_count = max(1, num_cores - 1)
     index = cmd.index("--")
     master_cmd = cmd[:index] + ["-M", "default"] + cmd[index:]
     procs = []
     log_files = []
-    pid = None
     try:
         # start master process
         master_f = open(fuzz_log, "w")
@@ -557,38 +577,46 @@ def speeding_afl_by_fork(cmd: list, envs: dict, fuzz_log: str, output_dir: str, 
         master_proc = subprocess.Popen(master_cmd, env=envs, stdout=master_f, stderr=subprocess.STDOUT, cwd=output_dir, bufsize=1, text=True)
         procs.append(master_proc)
 
+        # Diverse power schedules for slaves
+        schedules = ["fast", "explore", "coe", "lin", "quad", "exploit"]
+        slave_envs = envs.copy()
+        slave_envs["AFL_QUIET"] = "1"  # Silence slaves to reduce I/O pressure on disk
+
         # Start slave processes
         log_base_dir = os.path.dirname(fuzz_log)
         for i in range(min_cpu_count):
-            time.sleep(2) # stagger the start time of slave processes to avoid contention
+            time.sleep(1) # stagger the start time of slave processes
             slave_fuzz_log = os.path.join(log_base_dir, f"slave_{i}.log")
             slave_f = open(slave_fuzz_log, "w")
             log_files.append(slave_f)
-            afl_cmd = cmd[:index - 2] + ["-S", f"slave{i}"] + cmd[index:]
-            proc = subprocess.Popen(afl_cmd, env=envs, stdout=slave_f, stderr=subprocess.STDOUT, cwd=output_dir, bufsize=1, text=True)
+            sched = schedules[i % len(schedules)]
+            afl_cmd = cmd[:index - 2] + ["-S", f"slave{i}", "-p", sched] + cmd[index:]
+            proc = subprocess.Popen(afl_cmd, env=slave_envs, stdout=slave_f, stderr=subprocess.STDOUT, cwd=output_dir, bufsize=1, text=True)
             procs.append(proc)
 
-        plateau, _ = execution_until_coverage_saturation(proc, fuzzer_id, fuzz_log, True)
+        print(f"[+] Started AFL++ cluster with 1 Master and {min_cpu_count} Slaves ({min_cpu_count + 1} cores total).")
+        plateau, _ = execution_until_coverage_saturation(master_proc, fuzzer_id, fuzz_log, True, all_procs=procs)
         if not plateau:
-            number_of_crashes = len(os.listdir(crash_dir))
-            print(f"[!] WARN: Fuzzer termianted due to find {number_of_crashes} crashes. Please check logs and triage these crashes.")
+            copy_afl_crashes_to_crash_dir(fuzzer_id)
+            number_of_crashes = len(os.listdir(crash_dir)) if os.path.exists(crash_dir) else 0
+            print(f"[!] WARN: Fuzzer terminated due to finding {number_of_crashes} crashes. Please check logs and triage these crashes.")
     finally:
-        # Terminate all slave processes gracefully
+        # Terminate all processes gracefully
         for proc in procs:
             try:
                 kill_fuzzer_process(proc.pid, sig=signal.SIGTERM, include_parent=True)
             except Exception as e:
-                print_debug(f"[!] ERROR: Failed to kill slave process {proc.pid}: {e}")
+                print_debug(f"[!] ERROR: Failed to kill process {proc.pid}: {e}")
 
         # Wait for graceful termination
-        time.sleep(5)
+        time.sleep(3)
 
         for proc in procs:
             try:
                 kill_fuzzer_process(proc.pid, sig=signal.SIGKILL, include_parent=True)
                 proc.wait()
             except Exception as e:
-                print_debug(f"[!] ERROR: Failed to force kill slave process {proc.pid}: {e}")
+                print_debug(f"[!] ERROR: Failed to force kill process {proc.pid}: {e}")
 
         # Close all log files
         for log_f in log_files:
@@ -630,10 +658,10 @@ def run_fuzzer(fuzzer_id: int):
         "--proc", "/proc",           # 3. mount /proc (if program needs to check process information)
         "--unshare-net",
         "--bind", output_dir, output_dir, # 4. mount output_dir as read-write (Read-Write)
-        "--bind", crash_dir, crash_dir, # 5. mount crash_dir as read-write (Read-Write)
+        "--bind", crash_dir, crash_dir,   # 5. mount crash_dir as read-write (Read-Write)
         "--tmpfs", "/tmp",           # Provide an isolated in-memory /tmp for mkstemp
         "--die-with-parent",         # 6. parent process dies, child process dies too
-        "--new-session",           # 7. create new process session
+        "--new-session",             # 7. create new process session
     ]
 
     envs = os.environ.copy()
@@ -657,6 +685,15 @@ def run_fuzzer(fuzzer_id: int):
     else:
         cmd = sandbox_cmd + ["stdbuf", "-oL", "-eL", fuzzer, "-use_value_profile=1", f"-artifact_prefix={crash_dir}/", "-close_fd_mask=3", "-report_slow_units=60", "-detect_leaks=0", "-ignore_crashes=1", fuzzing_corpus_dir, "-dict=" + dictionary_file]
     cmd_str = " ".join(cmd)
+    num_cores = int(os.environ.get("AFL_NUM_CORES", "8"))
+    if num_cores > 1:
+        print(f"[+] Starting parallel fuzzing engine with {num_cores} cores...")
+        if get_fuzzing_engine() == FuzzingEngine.AFLpp:
+            speeding_afl_by_fork(cmd, envs, fuzz_log, output_dir, fuzzer_id, crash_dir)
+        else:
+            speeding_libfuzzer_by_fork(cmd, envs, fuzz_log, output_dir, fuzzer_id, crash_dir)
+        return
+
     fork = False
     with open(fuzz_log, "w") as f:
         proc = subprocess.Popen(cmd, env=envs, stdout=f, stderr=subprocess.STDOUT, cwd=output_dir, bufsize=1, text=True)

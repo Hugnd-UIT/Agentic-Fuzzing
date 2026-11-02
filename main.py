@@ -3,12 +3,14 @@ import subprocess
 import argparse
 import os
 import logging
-load_dotenv(".env") # Load environment variables before importing other modules
+
+load_dotenv(".env") # Load environment
 subprocess.run(["/bin/bash", os.path.join(os.path.dirname(__file__), "src/tools/copy-tools.sh")], check=True)
-from src.agents.ManagerAgent.agent import ManagerAgent
+
+from src.agents.manager.agent import ManagerAgent
 from src.utils.config import get_agent_addresses
 from src.utils.config import CONFIG
-from src.agents.ManagerAgent.prompt import INITIAL_INPUT_MESSAGE
+from src.agents.manager.prompt import INITIAL_INPUT_MESSAGE
 
 # Set logging level for dependencies to critical
 openai_logger = logging.getLogger('openai')

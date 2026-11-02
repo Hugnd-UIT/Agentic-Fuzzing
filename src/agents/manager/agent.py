@@ -10,15 +10,17 @@ from .prompt import NO_COVERAGE_GUIDANCE_SYSTEM_PROMPT, SYSTEM_PROMPT
 from typing import override
 from typing import List
 import logging
-from src.agents.BuilderAgent.agent import BuilderAgent
-from src.agents.HarnessAgent.agent import HarnessAgent
-from src.agents.FuzzerAgent.agent import FuzzerAgent
-from src.agents.CrashAnalyzerAgent.agent import CrashAnalyzerAgent
-from src.agents.DictionaryGeneratorAgent.agent import DictionaryGeneratorAgent
-from src.agents.SeedGeneratorAgent.agent import SeedGeneratorAgent
-from src.agents.CoverageAnalyzerAgent.agent import CoverageAnalyzerAgent
+import importlib
 from src.tools.api import API_TOOL_CALLS
 from src.utils.config import CONFIG
+
+BuilderAgent = importlib.import_module("src.agents.builder.agent").BuilderAgent
+HarnessAgent = importlib.import_module("src.agents.harness-generator.agent").HarnessAgent
+FuzzerAgent = importlib.import_module("src.agents.fuzzer.agent").FuzzerAgent
+CrashAnalyzerAgent = importlib.import_module("src.agents.crash-analyzer.agent").CrashAnalyzerAgent
+DictionaryGeneratorAgent = importlib.import_module("src.agents.dict-generator.agent").DictionaryGeneratorAgent
+SeedGeneratorAgent = importlib.import_module("src.agents.seed-generator.agent").SeedGeneratorAgent
+CoverageAnalyzerAgent = importlib.import_module("src.agents.cov-analyzer.agent").CoverageAnalyzerAgent
 
 class ManagerAgent(BaseAgent):
     logger = get_logger("Manager Agent")

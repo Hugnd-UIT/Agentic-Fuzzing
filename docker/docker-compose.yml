@@ -20,6 +20,7 @@ services:
       - SRC=/src/${REPO_BASE_NAME}
       - OUTPUT=/root/agentic-fuzzing/output/${REPO_BASE_NAME}
       - AFL_SKIP_CPUFREQ=1
+      - AFL_NUM_CORES=${AFL_NUM_CORES:-8}
       - PYTHONUNBUFFERED=1
       - UV_PROJECT_ENVIRONMENT=/root/.venv
       - UV_LINK_MODE=copy

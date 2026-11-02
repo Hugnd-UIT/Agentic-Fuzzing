@@ -90,7 +90,7 @@ class Summary:
             messages.extend(conversation_history)
             messages.append({"role": "user", "content": SUMMARIZATION_TAIL_PROMPT})
             
-            response, _ = query_llm(client=self.client, messages=messages, tools=[], logger=self.logger, tool_choice="none")
+            response, _, _ = query_llm(client=self.client, messages=messages, tools=[], logger=self.logger, tool_choice="none")
             
             # Try to parse JSON response
             try:
