@@ -417,9 +417,14 @@ CRASH_SIGNATURES = frozenset({
     "memorysanitizer",
     "use-of-uninitialized-value",
     
-    # UndefinedBehaviorSanitizer
+    # Critical UndefinedBehaviorSanitizer
     "undefinedbehaviorsanitizer",
-    "runtime error:",
+    "signed integer overflow",
+    "integer overflow",
+    "pointer-overflow",
+    "division by zero",
+    "out of bounds",
+    "null pointer",
 
     # Generic / libFuzzer / OSS-Fuzz crash wrappers
     "==error:",
@@ -455,64 +460,63 @@ RUNTIME_WRAPPER_PATTERNS = [
 def is_genuine_crash(output: str | None, returncode: int | None) -> bool:
     if output:
         out_lower = output.lower()
-        if any(sig in out_lower for sig in CANONICAL_CRASH_SIGNATURES):
+        if any(sig in out_lower for sig in CRASH_SIGNATURES):
             return True
     if returncode is not None and (returncode >= 128 or returncode in CRASH_SIGNAL_RETURN_CODES):
         return True
     return False
 
 def extract_crashing_frame_and_token(output: str, src_dir: str, harness_path: str) -> dict:
-    dedup_token_match = ASAN_DEDUP_TOKEN_RE.search(output)
-    dedup_token = dedup_token_match.group(1) if dedup_token_match else None
+    token_m = ASAN_DEDUP_TOKEN_RE.search(output)
+    dedup_token = token_m.group(1) if token_m else None
+    out_lower = output.lower()
 
-    # Check ASan stack frames
-    for m in STACK_FRAME_RE.finditer(output):
-        idx, func, file_path, line, col = m.groups()
-        if any(rw in func or rw in file_path for rw in RUNTIME_WRAPPER_PATTERNS):
-            continue
-        norm_file = os.path.normpath(file_path).replace("\\", "/")
-        norm_src = os.path.normpath(src_dir).replace("\\", "/")
-        norm_harness = os.path.normpath(harness_path).replace("\\", "/") if harness_path else ""
-
-        is_harness = (
-            "harness" in norm_file or "poc.cpp" in norm_file or
-            "LLVMFuzzerTestOneInput" in func or (norm_harness and norm_harness in norm_file) or
-            "/fuzzers/fuzzer_" in norm_file
-        )
-        is_library = norm_file.startswith(norm_src) or "/src/" in norm_file
-
-        token = dedup_token or f"{func}:{norm_file}:{line}"
-        return {
-            "found": True,
-            "func": func.strip(),
-            "file": norm_file,
-            "line": int(line) if line.isdigit() else 0,
-            "is_harness": is_harness,
-            "is_library": is_library,
-            "token": token
-        }
-
-    # Check UBSan single-line
+    # Filter out harmless UBSan compiler noise
     ubsan_m = UBSAN_ERROR_RE.search(output)
     if ubsan_m:
-        file_path, line, col, desc = ubsan_m.groups()
-        norm_file = os.path.normpath(file_path).replace("\\", "/")
-        norm_src = os.path.normpath(src_dir).replace("\\", "/")
-        norm_harness = os.path.normpath(harness_path).replace("\\", "/") if harness_path else ""
-        is_harness = "harness" in norm_file or "poc.cpp" in norm_file or (norm_harness and norm_harness in norm_file) or "/fuzzers/fuzzer_" in norm_file
-        is_library = norm_file.startswith(norm_src) or "/src/" in norm_file
-        token = dedup_token or f"ubsan:{norm_file}:{line}"
-        return {
-            "found": True,
-            "func": desc.strip(),
-            "file": norm_file,
-            "line": int(line) if line.isdigit() else 0,
-            "is_harness": is_harness,
-            "is_library": is_library,
-            "token": token
-        }
+        desc = ubsan_m.group(4).lower()
+        if "left shift of" in desc or "misaligned address" in desc:
+            has_fatal_asan = any(sig in out_lower for sig in [
+                "addresssanitizer", "heap-buffer-overflow", "stack-buffer-overflow",
+                "heap-use-after-free", "double-free", "deadly signal", "==error:"
+            ])
+            if not has_fatal_asan:
+                return {"found": False, "is_harness": False, "is_library": False, "token": "harmless_ubsan_noise"}
 
-    return {"found": False, "is_harness": False, "is_library": False, "token": "unknown"}
+    if "is located in stack of thread" in output and "LLVMFuzzerTestOneInput" in output:
+        return {"found": True, "func": "LLVMFuzzerTestOneInput", "file": harness_path or "harness.cpp", "line": 0, "is_harness": True, "is_library": False, "token": dedup_token or "harness_stack_overflow"}
+
+    cand = None
+    for m in STACK_FRAME_RE.finditer(output):
+        idx, func, file_path, line, col = m.groups()
+        if not any(rw in func or rw in file_path for rw in RUNTIME_WRAPPER_PATTERNS):
+            cand = (func.strip(), file_path, line, dedup_token or f"{func.strip()}:{file_path}:{line}")
+            break
+
+    if not cand and ubsan_m:
+        file_path, line, col, desc = ubsan_m.groups()
+        cand = (desc.strip(), file_path, line, dedup_token or f"ubsan:{file_path}:{line}")
+
+    if not cand:
+        return {"found": False, "is_harness": False, "is_library": False, "token": "unknown"}
+
+    func, file_path, line, token = cand
+    norm_file = os.path.normpath(file_path).replace("\\", "/")
+    norm_src = os.path.normpath(src_dir).replace("\\", "/")
+    norm_harness = os.path.normpath(harness_path).replace("\\", "/") if harness_path else ""
+
+    is_harness = ("harness" in norm_file or "poc.cpp" in norm_file or "LLVMFuzzerTestOneInput" in func or (norm_harness and norm_harness in norm_file) or "/fuzzers/fuzzer_" in norm_file)
+    is_library = norm_file.startswith(norm_src) or "/src/" in norm_file
+
+    return {
+        "found": True,
+        "func": func,
+        "file": norm_file,
+        "line": int(line) if str(line).isdigit() else 0,
+        "is_harness": is_harness,
+        "is_library": is_library,
+        "token": token
+    }
 
 def pre_triage_and_dedup_crashes(fuzzer_id: int) -> dict:
     crash_dir = ProjectUtils.get_fuzzer_crash_dir(fuzzer_id)
@@ -538,7 +542,7 @@ def pre_triage_and_dedup_crashes(fuzzer_id: int) -> dict:
 
     env = os.environ.copy()
     env["ASAN_OPTIONS"] = "detect_leaks=0:abort_on_error=1:symbolize=1"
-    env["UBSAN_OPTIONS"] = "print_stacktrace=1:halt_on_error=1:symbolize=1"
+    env["UBSAN_OPTIONS"] = "print_stacktrace=1:halt_on_error=0:symbolize=1"
 
     library_crashes_by_token = {}
     harness_crashes = []
@@ -561,7 +565,8 @@ def pre_triage_and_dedup_crashes(fuzzer_id: int) -> dict:
                 tok = frame_info["token"]
                 if tok not in library_crashes_by_token:
                     library_crashes_by_token[tok] = (cfile, frame_info)
-        except Exception:
+        except Exception as e:
+            print_debug(f"[!] Warning: error testing crash file {cfile}: {e}")
             continue
 
     # Clean up non-crash files

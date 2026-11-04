@@ -53,22 +53,24 @@ You operate strictly based on the **Current System State**.
 The `check_status` tool allows you to observe current system states by inspecting the contents of these directories. Do not memorize file names; look them up.
 $OUTPUT/
 ├── build/ # Build artifacts
-│ ├── build.sh # Build automation script
-│ ├── sanitizer/ # Sanitizer-instrumented artifacts
-│ └── coverage/ # Coverage-instrumented artifacts
+│   ├── build.sh # Build automation script
+│   ├── sanitizer/ # Sanitizer-instrumented artifacts
+│   └── coverage/ # Coverage-instrumented artifacts
 ├── dictionary/ # Fuzzing dictionaries 
 ├── seeds/ # Initial seed corpus
 ├── harnesses/ # Generated harnesses
-│ └── harness_<id>.cpp # e.g., harness_000.cpp
+│   └── harness_<id>.cpp # e.g., harness_000.cpp
 ├── fuzzers/ # Fuzzer instances (Multiple agents)
-│ ├── fuzzer_<id>/ # Matches harness_<id>.cpp
-│ │ ├── fuzzer # Fuzzer executable
-│ │ ├── fuzzer_cov # Coverage-instrumented fuzzer
-│ │ ├── fuzzing_corpus/ # Fuzzing corpus owned by the fuzzer
-│ │ ├── crashes/ # Fuzzing crashes
-│ │ └── logs/ # Fuzzing logs
+│   └── fuzzer_<id>/ # Matches harness_<id>.cpp
+│     ├── fuzzer # Fuzzer executable
+│     ├── fuzzer_cov # Coverage-instrumented fuzzer
+│     ├── fuzzing_corpus/ # Fuzzing corpus owned by the fuzzer
+│     ├── crashes/ # Fuzzing crashes
+│     └── logs/ # Fuzzing logs
 ├── coverage_guidance/ # Coverage guidance for the fuzzing campaign 
 └── crash_reports/ # Crash analysis reports
+    ├── lib_bug/ # Library vulnerabilities
+    └── harness_bug/ # Harness misuse/errors
 """
 
 NO_COVERAGE_GUIDANCE_SYSTEM_PROMPT = """
@@ -120,19 +122,21 @@ You operate strictly based on the **Current System State**.
 The `check_status` tool allows you to observe current system states by inspecting the contents of these directories. Do not memorize file names; look them up.
 $OUTPUT/
 ├── build/ # Build artifacts
-│ ├── build.sh # Build automation script
-│ ├── sanitizer/ # Sanitizer-instrumented artifacts
+│   ├── build.sh # Build automation script
+│   └── sanitizer/ # Sanitizer-instrumented artifacts
 ├── dictionary/ # Fuzzing dictionaries 
 ├── seeds/ # Initial seed corpus
 ├── harnesses/ # Generated harnesses
-│ └── harness_<id>.cpp # e.g., harness_000.cpp
+│   └── harness_<id>.cpp # e.g., harness_000.cpp
 ├── fuzzers/ # Fuzzer instances (Multiple agents)
-│ ├── fuzzer_<id>/ # Matches harness_<id>.cpp
-│ │ ├── fuzzer # Fuzzer executable
-│ │ ├── fuzzing_corpus/ # Fuzzing corpus owned by the fuzzer
-│ │ ├── crashes/ # Fuzzing crashes
-│ │ └── logs/ # Fuzzing logs
+│   ├── fuzzer_<id>/ # Matches harness_<id>.cpp
+│     ├── fuzzer # Fuzzer executable
+│     ├── fuzzing_corpus/ # Fuzzing corpus owned by the fuzzer
+│     ├── crashes/ # Fuzzing crashes
+│     └── logs/ # Fuzzing logs
 └── crash_reports/ # Crash analysis reports
+    ├── lib_bug/ # Library vulnerabilities
+    └── harness_bug/ # Harness misuse/errors
 """
 
 INITIAL_INPUT_MESSAGE = """

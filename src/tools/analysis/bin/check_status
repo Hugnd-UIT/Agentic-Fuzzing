@@ -82,17 +82,35 @@ def get_crash_summary(fuzzer_id: int) -> str:
     """Extract brief crash summary from crash report if available."""
     try:
         report_dir = ProjectUtils.get_project_crash_report_dir()
-        report_file = os.path.join(report_dir, f"crash_{fuzzer_id:03d}", "crash_report.md")
-        if os.path.exists(report_file):
-            with open(report_file, "r", encoding="utf-8", errors="ignore") as f:
-                content = f.read()
-            match = re.search(r"## Crash Summary\s*\n+([^\n#]+)", content)
-            if match:
-                return match.group(1).strip()
+        candidate_paths = [
+            os.path.join(report_dir, f"crash_{fuzzer_id:03d}", "crash_report.md"),
+            os.path.join(report_dir, "lib_bug", f"crash_{fuzzer_id:03d}", "crash_report.md"),
+            os.path.join(report_dir, "harness_bug", f"crash_{fuzzer_id:03d}", "crash_report.md"),
+        ]
+        # Check all subdirectories in lib_bug, harness_bug, and root
+        for category in ["lib_bug", "harness_bug", ""]:
+            search_dir = os.path.join(report_dir, category) if category else report_dir
+            if not os.path.exists(search_dir):
+                continue
+            for item in os.listdir(search_dir):
+                cdir = os.path.join(search_dir, item)
+                if os.path.isdir(cdir):
+                    cand = os.path.join(cdir, "crash_report.md")
+                    if os.path.exists(cand) and cand not in candidate_paths:
+                        candidate_paths.append(cand)
+
+        for report_file in candidate_paths:
+            if os.path.exists(report_file):
+                with open(report_file, "r", encoding="utf-8", errors="ignore") as f:
+                    content = f.read()
+                fuzzer_match = re.search(r"## Fuzzer ID:\s*(\d+)", content)
+                if fuzzer_match and int(fuzzer_match.group(1)) == fuzzer_id:
+                    summary_match = re.search(r"## Crash Summary\s*\n+([^\n#]+)", content)
+                    if summary_match:
+                        return summary_match.group(1).strip()
     except Exception:
         pass
     return ""
-
 
 def check_directory() -> bool:
     """Check if the project directory exists and is properly structured."""

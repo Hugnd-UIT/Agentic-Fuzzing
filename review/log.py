@@ -5,7 +5,7 @@ import sys
 import time
 from typing import Sequence
 
-LOGGER_NAME = "fuzzagent_introspector"
+LOGGER_NAME = "Agentic fuzzing reviewer"
 
 
 def get_logger(name: str | None = None) -> logging.Logger:

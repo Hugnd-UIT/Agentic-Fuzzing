@@ -23,7 +23,7 @@ def main() -> None:
         sys.exit(1)
 
     config.ensure_introspector_dir()
-    log_file = os.path.join(config.introspector_dir, "fuzzagent_introspector.log")
+    log_file = os.path.join(config.introspector_dir, "agentic_fuzzing_reviewer.log")
     configure_logging(log_file)
 
     logger = get_logger()

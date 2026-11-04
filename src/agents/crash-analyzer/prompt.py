@@ -81,43 +81,34 @@ Add the extra compilation flags when necessarily. You can find the extra flags i
 3.  Read the file/documentation of the suspect API or function to verify the preconditions and postconditions.
 4.  Repeat the process using `debug_crash` until the point of failure and its root cause are fully identified.
 
-### Phase 3: The "Blame" Decision Tree (Triage Logic)
-The **Gold Rules** for triaging the crash is: for library bugs, the harnesses should not voilate the library contracts, otherwise thery are harness bugs.
-If you are not sure, apply these rules IN ORDER. The first match determines the verdict.
+### Phase 3: The "Blame" Evaluation (Fault Ownership & Causality Analysis)
 
-**Rule 1: The "Harness Fault" Check (Sanity Check)**
--   **Condition**: Is the top-most frame located directly in the fuzzer harness file (e.g., `fuzz_harness.cpp`)?
--   **Verdict**: **HARNESS BUG**. (The harness crashed itself before entering the library).
+Your objective is to determine whether the crash represents a **Genuine Library Vulnerability (`library-bug`)** or **Harness Misuse (`harness-bug`)** by answering two fundamental questions:
 
-**Rule 2: The "Null Pointer" Check**
--   **Condition**: Is it a NULL Dereference inside the library?
--   **Action**: Trace the NULL value back. Did the Harness pass a NULL pointer to an API directly?
--   **Verdict**:
-    -   If Harness passed NULL violating contract -> **HARNESS BUG**.
-    -   If Library generated NULL internally -> **LIBRARY BUG**.
+#### 1. The Trust Boundary Question: Who introduced the invalid state?
+- **Caller (Harness) Fault (`harness-bug`)**:
+  The harness is responsible for its own memory buffers and adhering to language/API calling conventions:
+  - Did the harness lie about buffer capacity (e.g. allocated 16 bytes but told the API size is 1024 or -1)?
+  - Did the harness pass a raw uninitialized pointer or a NULL pointer to a parameter documented as requiring non-NULL?
+  - Did the harness introduce a use-after-free or double-free on memory it allocated and manages?
+  - Did the crash occur directly inside the harness's own stack or heap frame?
+  - *Verdict*: If the crash was triggered because the harness violated preconditions or mishandled its own buffers, classify as **`harness-bug`**.
 
-**Rule 3: The "Memory Ownership" Check (UAF/Double Free)**
--   **Condition**: Is it a Use-After-Free or Double-Free?
--   **Action**: Check who freed the memory.
--   **Verdict**:
-    -   If Harness freed it and passed it back -> **HARNESS BUG**.
-    -   If Library freed it and tried to use it again -> **LIBRARY BUG**.
+- **Callee (Library) Fault (`library-bug` / CVE Candidate)**:
+  The library is responsible for safely parsing and validating untrusted data payloads:
+  - Did the harness allocate a valid buffer and accurately declare its length, but the library crashed while parsing the bytes inside?
+  - Did an integer overflow, arithmetic wrap-around, or buffer overrun occur within the library's internal parsing or decompression logic while processing the input stream?
+  - Did the library execute an assertion failure (`assert()`) on untrusted data bytes (CWE-617 DoS)?
+  - *Verdict*: If the harness complied with the API preconditions, but the library crashed due to internal logic errors, memory safety violations, or unhandled malformed data, classify as **`library-bug`**.
 
-**Rule 4: The "Assertion" Check**
--   **Condition**: Did an `assert()` fail?
--   **Verdict**:
-    -   If assert is enforcing input requirements (e.g., `assert(input != NULL)`) -> **HARNESS BUG**.
-    -   If assert is checking internal state (e.g., `assert(state == VALID)`) -> **LIBRARY BUG**.
-
-**Rule 5: OOM and Timeout**
--   **Condition**: Did the OOM/Timout is controlled by the harness?
--   **Verdict**:
-    -   If allocation size or loop count is passed by the harness -> **HARNESS BUG**.
-    -   If casued by internal states -> **LIBRARY BUG**.
-
-**Rule 5: Default Liability**
--   **Condition**: If the crash is inside the library, and the harness inputs appear to follow the API documentation.
--   **Verdict**: **LIBRARY BUG**.
+#### 2. The Exploitability Check: Is this a real vulnerability or compiler pedantry?
+- **Genuine Vulnerabilities (`library-bug`)**:
+  - Memory corruption (Heap/Stack/Global Buffer Overflow, Use-After-Free, Double-Free, Wild Pointer, OOB Read/Write).
+  - Exploitable integer overflow / pointer overflow (CWE-190) that leads to allocation wrap-around or memory corruption.
+  - Reachable Denial of Service (SIGSEGV, crash on valid API invocation).
+- **Benign Compiler Noise (`harness-bug`)**:
+  - Pure theoretical C standard quirks that do NOT cause memory corruption or crashes in production builds (e.g., `left shift of 1 by 31 places`, unaligned memory access on x86_64).
+  - Do NOT file a `library-bug` for harmless compiler pedantry that produces no real-world crash or security impact.
 
 ### Phase 4: Reporting
 1.  Construct the report content.
