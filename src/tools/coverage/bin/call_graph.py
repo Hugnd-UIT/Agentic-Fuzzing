@@ -142,6 +142,12 @@ class CallGraph:
                     continue
                 all_paths.append(path)
 
+        if not all_paths:
+            # Fallback: if no direct public API path is registered, find direct callers from callgraph
+            callers = [p for p in self.graph.predecessors(target_func) if not p.startswith("llvm.")]
+            for caller in callers[:5]:
+                all_paths.append([caller, target_func])
+
         # Sort all found paths by their length (number of functions in the trace)
         all_paths.sort(key=len)
 
@@ -179,6 +185,28 @@ def print_call_traces(call_traces: List[List[str]], target_func: str) -> None:
     print(f"Found {len(call_traces)} call traces from public APIs to {target_func}:")
     for trace in call_traces:
         print(" -> ".join(trace))
+    if not call_traces:
+        print(f"No reachable call trace found from public APIs to target: '{target_func}'.")
+        return
+
+    print(f"Found {len(call_traces)} actionable call paths from public APIs:")
+    for idx, trace in enumerate(call_traces[:5], 1):
+        print(f"  [{idx}] " + " -> ".join(trace))
+
+    best_trace = call_traces[0]
+    entry_api = best_trace[0]
+
+    print("\nGUIDANCE FOR TARGET: '{target_func}' :")
+    print("```cpp")
+    print(f"// Goal: Reach target '{target_func}'")
+    if len(best_trace) > 1:
+        print(f"// Path: {' -> '.join(best_trace)}")
+        print(f"// Step: Call public entry API to trigger target:")
+        print(f"{entry_api}(...);")
+    else:
+        print(f"// '{target_func}' is directly callable from public APIs:")
+        print(f"{target_func}(...);")
+    print("```")
 
 def main():
     parser = argparse.ArgumentParser()

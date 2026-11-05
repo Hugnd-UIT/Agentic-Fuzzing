@@ -2,12 +2,38 @@
 
 import os
 import copy
+import re
 from typing import List
 import subprocess
 import shutil
 import argparse, sys
 import time
 from project_utils import SANCOV_CFLAGS, get_fuzzing_engine, FuzzingEngine, FuzzerExecutionInfo, FuzzerExecutionState, ProjectUtils, CompileKind, FUZZER_CFLAGS, COVERAGE_CFLAGS, print_debug
+
+DEBUG_FLAG = [
+    (re.compile(r"#\s*define\s+[A-Za-z0-9_]*DEBUG[A-Za-z0-9_]*"), "Redefining internal DEBUG macro alters memory layout and struct offsets"),
+    (re.compile(r"#\s*undef\s+NDEBUG"), "Undefining NDEBUG forces test assertions to abort"),
+    (re.compile(r"#\s*define\s+private\s+public"), "Hacking C++ access specifiers violates encapsulation"),
+    (re.compile(r"#\s*define\s+protected\s+public"), "Hacking C++ access specifiers violates encapsulation"),
+    (re.compile(r"#\s*define\s+assert\s*\("), "Redefining or suppressing assert() bypasses system checks"),
+    (re.compile(r"#\s*define\s+abort\s*\("), "Redefining or suppressing abort() bypasses system checks"),
+]
+
+def check_debug_flag(harness_path: str):
+    if not os.path.exists(harness_path):
+        return
+    with open(harness_path, "r", encoding="utf-8", errors="ignore") as f:
+        content = f.read()
+    for pattern, reason in DEBUG_FLAG:
+        match = pattern.search(content)
+        if match:
+            matched_str = match.group(0)
+            raise Exception(
+                f"[!] Error: Policy violation in harness {harness_path}!\n"
+                f"    Detected debug flag: '{matched_str}'\n"
+                f"    Reason: {reason}\n"
+                f"    Constraint: Harness is strictly prohibited from modifying library internal macros, overriding asserts, or hacking access control to bypass compiler errors. Please test public APIs cleanly."
+            )
 
 def necessary_print(message: str, CompileKind: CompileKind):
     if CompileKind == CompileKind.Fuzzer:
@@ -171,6 +197,8 @@ def log_extra_flags(harness_id: int, extra_flags: str):
         f.write(extra_flags)
 
 def check_and_compile_harness(harness_id: int, extra_flags: str, force_overwrite: bool):
+    harness_path = ProjectUtils.get_harness_path_by_id(harness_id)
+    check_debug_flag(harness_path)
     check_harness_and_output_dir(harness_id, force_overwrite)
 
     output_dir = ProjectUtils.get_fuzzer_dir_by_id(harness_id)
