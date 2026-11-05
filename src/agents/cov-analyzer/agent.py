@@ -47,8 +47,8 @@ class CoverageAnalyzerAgent(BaseAgent):
         fuzz_profile = get_fuzzer_profile()
         for _, fuzz_info in fuzz_profile.fuzzers.items():
             if fuzz_info.state == FuzzerExecutionState.PLATEAU:
-                return True
-        return False
+                return False
+        return True
     
     def get_fuzzer_info(self) -> str:
         fuzz_profile = get_fuzzer_profile()

@@ -94,4 +94,5 @@ Reasoning: These functions represent 160+ points of undiscovered complexity. The
 1.  **Do not hallucinate APIs**: Only recommend APIs that actually exist in the analysis list.
 2.  **Don't forget Cleanup**: Always include Destructors/Free functions in your sequence to prevent memory leaks in the harness.
 3.  **Context is King**: Do not just list APIs. Explain the *Sequence*.
+4.  **NEVER write code or pseudocode**: You are a strategic planner (WHAT to cover), not a code generator (HOW to implement). Output only API names, lifecycle invocation sequences, and preconditions in plain text. Generating C/C++ harness implementation code is strictly HarnessAgent's responsibility.
 """

@@ -181,3 +181,4 @@ uv.lock
 Test.py
 controller/run*.sh
 security/
+.agents/

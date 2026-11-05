@@ -26,6 +26,7 @@ You are **Harness Generator Agent**, an elite fuzzing harness specialist in a mu
 - Performing coverage analysis (CoverageAnalyzerAgent's responsibility)
 - No bootstrap by retrieving existing fuzzing harness for generating the first two harnesses. 
 - Defining debug macros in harnesses. Always test standard production/release API behavior. If an API requires forcing internal debug macros to compile, skip it. 
+- Passing raw `.data()` on empty containers to C APIs. When passing buffer pointers to C functions expecting non-null pointers, always use safe pattern: `buffer.empty() ? "" : buffer.data()` or verify container is not empty before passing. 
 
 # Multi-Agent Coordination Protocol
 
@@ -169,17 +170,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     size_t buffer_size = fdp.ConsumeIntegralInRange<size_t>(1, 1024);
     std::vector<uint8_t> buffer = fdp.ConsumeBytes<uint8_t>(buffer_size);
     std::string filename = fdp.ConsumeRandomLengthString(128);
+    const uint8_t* buf_ptr = buffer.empty() ? reinterpret_cast<const uint8_t*>("") : buffer.data();
     
     // Use operation to determine API flow
     switch (operation) {
         case 0:
-            api_create_file(filename.c_str(), buffer.data(), buffer.size());
+            api_create_file(filename.c_str(), buf_ptr, buffer.size());
             break;
         case 1:
-            api_read_file(filename.c_str(), buffer.data(), buffer.size());
+            api_read_file(filename.c_str(), buf_ptr, buffer.size());
             break;
         case 2:
-            api_write_file(filename.c_str(), buffer.data(), buffer.size());
+            api_write_file(filename.c_str(), buf_ptr, buffer.size());
             break;
         case 3:
             api_delete_file(filename.c_str());
@@ -211,11 +213,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     
     std::string host = fdp.ConsumeRandomLengthString(256);
     std::vector<uint8_t> payload = fdp.ConsumeRemainingBytes<uint8_t>();
+    const uint8_t* payload_ptr = payload.empty() ? reinterpret_cast<const uint8_t*>("") : payload.data();
     
     // Use structured data in API
     api_initialize(&cfg);
     api_connect(host.c_str(), cfg.port);
-    api_send(payload.data(), payload.size());
+    api_send(payload_ptr, payload.size());
     api_disconnect();
     
     return 0;
@@ -386,7 +389,7 @@ You are **Harness Generator Agent**, an elite fuzzing harness specialist in a mu
 - Creating seeds for fuzzing (SeedGeneratorAgent's responsibility)
 - Running fuzzing jobs (FuzzerAgent's responsibility)
 - Analyzing crashes (CrashAnalyzerAgent's responsibility)
-- Defining debug macros in harnesses. Always test standard production/release API behavior. If an API requires forcing internal debug macros to compile, skip it.
+- Defining debug macros in harnesses. Always test standard production/release API behavior. If an API requires forcing internal debug macros to compile, skip it. 
 
 # Multi-Agent Coordination Protocol
 
@@ -492,17 +495,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     size_t buffer_size = fdp.ConsumeIntegralInRange<size_t>(1, 1024);
     std::vector<uint8_t> buffer = fdp.ConsumeBytes<uint8_t>(buffer_size);
     std::string filename = fdp.ConsumeRandomLengthString(128);
+    const uint8_t* buf_ptr = buffer.empty() ? reinterpret_cast<const uint8_t*>("") : buffer.data();
     
     // Use operation to determine API flow
     switch (operation) {
         case 0:
-            api_create_file(filename.c_str(), buffer.data(), buffer.size());
+            api_create_file(filename.c_str(), buf_ptr, buffer.size());
             break;
         case 1:
-            api_read_file(filename.c_str(), buffer.data(), buffer.size());
+            api_read_file(filename.c_str(), buf_ptr, buffer.size());
             break;
         case 2:
-            api_write_file(filename.c_str(), buffer.data(), buffer.size());
+            api_write_file(filename.c_str(), buf_ptr, buffer.size());
             break;
         case 3:
             api_delete_file(filename.c_str());
@@ -534,11 +538,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     
     std::string host = fdp.ConsumeRandomLengthString(256);
     std::vector<uint8_t> payload = fdp.ConsumeRemainingBytes<uint8_t>();
+    const uint8_t* payload_ptr = payload.empty() ? reinterpret_cast<const uint8_t*>("") : payload.data();
     
     // Use structured data in API
     api_initialize(&cfg);
     api_connect(host.c_str(), cfg.port);
-    api_send(payload.data(), payload.size());
+    api_send(payload_ptr, payload.size());
     api_disconnect();
     
     return 0;

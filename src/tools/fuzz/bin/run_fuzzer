@@ -330,6 +330,8 @@ def parse_san_cov_from_libfuzzer_log(fuzz_log: str) -> tuple[int, int, int]:
 # Slow-units are not crashes. We need to clean them to avoid confusion.
 def clean_slow_units(fuzzer_id: int):
     crash_dir = ProjectUtils.get_fuzzer_crash_dir(fuzzer_id)
+    if not os.path.exists(crash_dir):
+        return
     for file in os.listdir(crash_dir):
         if file.startswith("slow-unit"):
             path = os.path.join(crash_dir, file)
@@ -338,6 +340,8 @@ def clean_slow_units(fuzzer_id: int):
 def get_cache_fuzzer_queue_dirs(fuzzer_id: int) -> list[str]:
     fuzzer_dir = ProjectUtils.get_cache_fuzzer_dir(fuzzer_id)
     output_dir = os.path.join(fuzzer_dir, "output")
+    if not os.path.exists(output_dir):
+        return []
     queue_dirs = []
     for entry in os.listdir(output_dir):
         instance_dir = os.path.join(output_dir, entry)
@@ -398,44 +402,61 @@ def copy_afl_crashes_to_crash_dir(fuzzer_id: int):
 # Zero false positive engine
 # ==============================================================================
 
-CRASH_SIGNATURES = frozenset({
-    # AddressSanitizer
-    "addresssanitizer",
+# Genuine memory corruption vulnerabilities
+GENUINE_MEMORY_CORRUPTION_PATTERNS = frozenset({
     "heap-buffer-overflow",
     "stack-buffer-overflow",
     "global-buffer-overflow",
     "heap-use-after-free",
     "stack-use-after-free",
-    "use-after-poison",
     "double-free",
     "alloc-dealloc-mismatch",
+    "use-after-poison",
+})
+
+# API contract, precondition, and harness misuse signatures
+PRECONDITION_OR_HARNESS_PATTERNS = frozenset({
+    "null pointer passed as argument",
+    "invalid-null-argument",
+    "assertion",
+    "assertion failed",
+    "assert_fail",
+    "__assert",
+    "check failed:",
+    "unreachable code",
+    "mpack_unreachable",
+    "allocation-size-too-big",
+    "libfuzzer: out-of-memory",
+    "out of memory",
+    "bad_alloc",
+    "length_error",
+    "out_of_range",
+    "call to null function pointer",
+    "misaligned address",
+    "division by zero",
+    "null pointer",
+    "pointer-overflow",
+    "signed integer overflow",
+    "integer overflow",
+    "out of bounds",
+})
+
+# Generic crash wrappers and fatal signals
+GENERIC_CRASH_PATTERNS = frozenset({
+    "addresssanitizer",
+    "memorysanitizer",
+    "undefinedbehaviorsanitizer",
+    "use-of-uninitialized-value",
     "stack-overflow",
     "dynamic-stack-buffer-overflow",
     "container-overflow",
-
-    # MemorySanitizer
-    "memorysanitizer",
-    "use-of-uninitialized-value",
-    
-    # Critical UndefinedBehaviorSanitizer
-    "undefinedbehaviorsanitizer",
-    "signed integer overflow",
-    "integer overflow",
-    "pointer-overflow",
-    "division by zero",
-    "out of bounds",
-    "null pointer",
-
-    # Generic / libFuzzer / OSS-Fuzz crash wrappers
     "==error:",
     "deadly signal",
-    "libfuzzer: out-of-memory",
     "==aborting",
-
-    # Explicit crash assertions
-    "assertion failed",
-    "check failed:",
 })
+
+# Combined set of all recognized crash signatures
+CRASH_SIGNATURES = GENUINE_MEMORY_CORRUPTION_PATTERNS | PRECONDITION_OR_HARNESS_PATTERNS | GENERIC_CRASH_PATTERNS
 
 CRASH_SIGNAL_RETURN_CODES = frozenset({134, 136, 137, 138, 139})
 
@@ -486,36 +507,101 @@ def extract_crashing_frame_and_token(output: str, src_dir: str, harness_path: st
     if "is located in stack of thread" in output and "LLVMFuzzerTestOneInput" in output:
         return {"found": True, "func": "LLVMFuzzerTestOneInput", "file": harness_path or "harness.cpp", "line": 0, "is_harness": True, "is_library": False, "token": dedup_token or "harness_stack_overflow"}
 
-    cand = None
+    norm_harness = os.path.normpath(harness_path).replace("\\", "/") if harness_path else ""
+    norm_src = os.path.normpath(src_dir).replace("\\", "/")
+
+    # Collect all non-wrapper stack frames
+    frames = []
     for m in STACK_FRAME_RE.finditer(output):
         idx, func, file_path, line, col = m.groups()
         if not any(rw in func or rw in file_path for rw in RUNTIME_WRAPPER_PATTERNS):
-            cand = (func.strip(), file_path, line, dedup_token or f"{func.strip()}:{file_path}:{line}")
-            break
+            norm_f = os.path.normpath(file_path).replace("\\", "/")
+            is_h = ("harness" in norm_f or "poc.cpp" in norm_f or "LLVMFuzzerTestOneInput" in func or (norm_harness and norm_harness in norm_f) or "/fuzzers/fuzzer_" in norm_f)
+            is_lib = norm_f.startswith(norm_src) or "/src/" in norm_f
+            frames.append({
+                "idx": int(idx) if idx.isdigit() else len(frames),
+                "func": func.strip(),
+                "file": norm_f,
+                "line": int(line) if str(line).isdigit() else 0,
+                "is_harness": is_h,
+                "is_library": is_lib
+            })
 
-    if not cand and ubsan_m:
+    if not frames and ubsan_m:
         file_path, line, col, desc = ubsan_m.groups()
-        cand = (desc.strip(), file_path, line, dedup_token or f"ubsan:{file_path}:{line}")
+        norm_f = os.path.normpath(file_path).replace("\\", "/")
+        is_h = ("harness" in norm_f or "poc.cpp" in norm_f or (norm_harness and norm_harness in norm_f) or "/fuzzers/fuzzer_" in norm_f)
+        frames.append({
+            "idx": 0,
+            "func": desc.strip(),
+            "file": norm_f,
+            "line": int(line) if str(line).isdigit() else 0,
+            "is_harness": is_h,
+            "is_library": norm_f.startswith(norm_src) or "/src/" in norm_f
+        })
 
-    if not cand:
+    if not frames:
         return {"found": False, "is_harness": False, "is_library": False, "token": "unknown"}
 
-    func, file_path, line, token = cand
-    norm_file = os.path.normpath(file_path).replace("\\", "/")
-    norm_src = os.path.normpath(src_dir).replace("\\", "/")
-    norm_harness = os.path.normpath(harness_path).replace("\\", "/") if harness_path else ""
+    # 1. If Frame #0 is directly in the harness, it is 100% a harness bug
+    if frames[0]["is_harness"]:
+        f0 = frames[0]
+        return {
+            "found": True,
+            "func": f0["func"],
+            "file": f0["file"],
+            "line": f0["line"],
+            "is_harness": True,
+            "is_library": False,
+            "token": dedup_token or f"{f0['func']}:{f0['file']}:{f0['line']}"
+        }
 
-    is_harness = ("harness" in norm_file or "poc.cpp" in norm_file or "LLVMFuzzerTestOneInput" in func or (norm_harness and norm_harness in norm_file) or "/fuzzers/fuzzer_" in norm_file)
-    is_library = norm_file.startswith(norm_src) or "/src/" in norm_file
+    # 2. Check if this is a genuine memory corruption inside the library
+    is_memory_corruption = any(sig in out_lower for sig in GENUINE_MEMORY_CORRUPTION_PATTERNS)
+    if is_memory_corruption:
+        f0 = frames[0]
+        return {
+            "found": True,
+            "func": f0["func"],
+            "file": f0["file"],
+            "line": f0["line"],
+            "is_harness": f0["is_harness"],
+            "is_library": f0["is_library"],
+            "token": dedup_token or f"{f0['func']}:{f0['file']}:{f0['line']}"
+        }
 
+    # 3. Comprehensive Multi-Frame Precondition / Contract Attribution:
+    # Find the harness frame that called into the library
+    harness_frame = None
+    library_depth = 0
+    for i, frame in enumerate(frames):
+        if frame["is_harness"]:
+            harness_frame = frame
+            library_depth = i
+            break
+
+    is_precondition_violation = any(sig in out_lower for sig in PRECONDITION_OR_HARNESS_PATTERNS)
+    if harness_frame and (is_precondition_violation or library_depth <= 2):
+        return {
+            "found": True,
+            "func": harness_frame["func"],
+            "file": harness_frame["file"],
+            "line": harness_frame["line"],
+            "is_harness": True,
+            "is_library": False,
+            "token": f"harness_precondition:{harness_frame['func']}:{harness_frame['line']}"
+        }
+
+    # Fallback attribution to Frame #0
+    f0 = frames[0]
     return {
         "found": True,
-        "func": func,
-        "file": norm_file,
-        "line": int(line) if str(line).isdigit() else 0,
-        "is_harness": is_harness,
-        "is_library": is_library,
-        "token": token
+        "func": f0["func"],
+        "file": f0["file"],
+        "line": f0["line"],
+        "is_harness": f0["is_harness"],
+        "is_library": f0["is_library"],
+        "token": dedup_token or f"{f0['func']}:{f0['file']}:{f0['line']}"
     }
 
 def pre_triage_and_dedup_crashes(fuzzer_id: int) -> dict:
@@ -594,13 +680,49 @@ def pre_triage_and_dedup_crashes(fuzzer_id: int) -> dict:
         first_harness = harness_crashes[0][1]
         return {
             "verdict": "HARNESS_BUG",
-            "reason": f"Frame #0 is in harness ({first_harness['file']}:{first_harness['line']} in `{first_harness['func']}`)"
+            "reason": f"Harness fault detected at {first_harness['file']}:{first_harness['line']} in `{first_harness['func']}`"
         }
     else:
         return {
             "verdict": "NON_CRASH",
             "count": 0
         }
+
+def harvest_and_triage_cluster_crashes(fuzzer_id: int, fuzzer_info, fuzz_profile, elapsed_time: float) -> tuple[bool, bool] | None:
+    clean_slow_units(fuzzer_id)
+    copy_afl_crashes_to_crash_dir(fuzzer_id)
+    crash_dir = ProjectUtils.get_fuzzer_crash_dir(fuzzer_id)
+    crash_count = len([f for f in os.listdir(crash_dir) if not f.startswith(".")]) if os.path.exists(crash_dir) else 0
+
+    if crash_count == 0:
+        return None
+
+    print(f"[-] A fuzzing process produced crashes! Found {crash_count} crash file(s).")
+    fuzzer_info.execution_time = elapsed_time
+    fuzzer_info.finish_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
+
+    triage_result = pre_triage_and_dedup_crashes(fuzzer_id)
+    verdict = triage_result.get("verdict")
+
+    if verdict == "HARNESS_BUG":
+        print(f"[!] REJECTED as HARNESS BUG!")
+        print(f"[!] Reason: {triage_result.get('reason')}")
+        fuzzer_info.state = FuzzerExecutionState.HARNESS_BUG
+        ProjectUtils.save_fuzzer_profile(fuzz_profile)
+        return False, False
+
+    elif verdict == "NON_CRASH":
+        print(f"[!] REJECTED as NO CRASH (benign exits filtered)!")
+        fuzzer_info.state = FuzzerExecutionState.PLATEAU
+        ProjectUtils.save_fuzzer_profile(fuzz_profile)
+        return True, False
+
+    else:  # LIBRARY_BUG
+        unique_count = triage_result.get("unique_bugs", 1)
+        print(f"[+] VERIFIED as LIBRARY BUG ({unique_count} unique root cause(s))!")
+        fuzzer_info.state = FuzzerExecutionState.CRASHED
+        ProjectUtils.save_fuzzer_profile(fuzz_profile)
+        return False, False
 
 def execution_until_coverage_saturation(proc: subprocess.Popen, fuzzer_id: int, fuzz_log: str, fork: bool, all_procs: list = None) -> tuple[bool, bool]: # return: is_plateau, need_fork
     print(f"[+] Starting fuzzer monitoring with MAX_RUNNING_TIME={MAX_RUNNING_TIME}s, INTERVAL={INTERVAL}s")
@@ -633,35 +755,9 @@ def execution_until_coverage_saturation(proc: subprocess.Popen, fuzzer_id: int, 
                 crashed = True
 
             if crashed:
-                clean_slow_units(fuzzer_id)
-                copy_afl_crashes_to_crash_dir(fuzzer_id)
-                crash_dir = ProjectUtils.get_fuzzer_crash_dir(fuzzer_id)
-                crash_count = len(os.listdir(crash_dir)) if os.path.exists(crash_dir) else 0
-                if crash_count > 0:
-                    print(f"[-] A fuzzing process exited due to crash! Found {crash_count} crash file(s).")
-                    fuzzer_info.execution_time = elapsed_time
-                    fuzzer_info.finish_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
-
-                    triage_result = pre_triage_and_dedup_crashes(fuzzer_id)
-                    verdict = triage_result.get("verdict")
-
-                    if verdict == "HARNESS_BUG":
-                        print(f"[!] REJECTED as HARNESS BUG!")
-                        print(f"[!] Reason: {triage_result.get('reason')}")
-                        fuzzer_info.state = FuzzerExecutionState.HARNESS_BUG
-                        ProjectUtils.save_fuzzer_profile(fuzz_profile)
-                        return False, False
-                    elif verdict == "NON_CRASH":
-                        print(f"[!] REJECTED as NO CRASH!")
-                        fuzzer_info.state = FuzzerExecutionState.PLATEAU
-                        ProjectUtils.save_fuzzer_profile(fuzz_profile)
-                        return True, False
-                    else:  # LIBRARY_BUG
-                        unique_count = triage_result.get("unique_bugs", 1)
-                        print(f"[+] VERIFIED as LIBRARY BUG ({unique_count} unique root cause(s))!")
-                        fuzzer_info.state = FuzzerExecutionState.CRASHED
-                        ProjectUtils.save_fuzzer_profile(fuzz_profile)
-                        return False, False
+                triage_res = harvest_and_triage_cluster_crashes(fuzzer_id, fuzzer_info, fuzz_profile, elapsed_time)
+                if triage_res is not None:
+                    return triage_res
                 elif proc.poll() is not None:
                     print(f"[-] ERROR: The main fuzzing process exited!")
                     fuzzer_info.execution_time = elapsed_time
@@ -704,7 +800,7 @@ def execution_until_coverage_saturation(proc: subprocess.Popen, fuzzer_id: int, 
             cov = san_cov
         if ft == 0: # too slow
             if not fork:
-                # For some libraries (e.g., libvpx and ffmpeg), the fuzzing execution could be hanged by some large corpus files for a long time (e.g., 1 min for an input).
+                # For some libraries, the fuzzing execution could be hanged by some large corpus files for a long time.
                 # The fuzzing mechanism of Libfuzzer requires to execute every seed at least once.
                 # So, at such cases, we will finailly struck at the first execution and cannot get the code coverge.
                 # We use the -fork model in LibFuzzer, to split these inputs to other cores. So the fuzzing would not be strucked.
@@ -728,6 +824,10 @@ def execution_until_coverage_saturation(proc: subprocess.Popen, fuzzer_id: int, 
         prev_cov = cov
         prev_ft = ft
         prev_epoch = epoch
+
+    triage_res = harvest_and_triage_cluster_crashes(fuzzer_id, fuzzer_info, fuzz_profile, elapsed_time)
+    if triage_res is not None:
+        return triage_res
 
     fuzzer_info.state = FuzzerExecutionState.PLATEAU
     fuzzer_info.execution_time = elapsed_time
@@ -784,9 +884,9 @@ def speeding_libfuzzer_by_fork(cmd: list, envs: dict, fuzz_log: str, output_dir:
         pid = proc.pid
         try:
             plateau, _ = execution_until_coverage_saturation(proc, fuzzer_id, fuzz_log, True)
-            if not plateau:
-                number_of_crashes = len(os.listdir(crash_dir))
-                print(f"[!] WARN: Fuzzer termianted due to find {number_of_crashes} crashes. Please check logs and triage these crashes.")
+            number_of_crashes = len([f for f in os.listdir(crash_dir) if not f.startswith(".")]) if os.path.exists(crash_dir) else 0
+            if number_of_crashes > 0:
+                print(f"[!] WARN: Fuzzer terminated with {number_of_crashes} crash(es).")
         finally:
                 kill_fuzzer_process(pid)
                 proc.wait()
@@ -824,10 +924,11 @@ def speeding_afl_by_fork(cmd: list, envs: dict, fuzz_log: str, output_dir: str, 
 
         print(f"[+] Started AFL++ cluster with 1 Master and {min_cpu_count} Slaves ({min_cpu_count + 1} cores total).")
         plateau, _ = execution_until_coverage_saturation(master_proc, fuzzer_id, fuzz_log, True, all_procs=procs)
-        if not plateau:
-            copy_afl_crashes_to_crash_dir(fuzzer_id)
-            number_of_crashes = len(os.listdir(crash_dir)) if os.path.exists(crash_dir) else 0
-            print(f"[!] WARN: Fuzzer terminated due to finding {number_of_crashes} crashes. Please check logs and triage these crashes.")
+
+        copy_afl_crashes_to_crash_dir(fuzzer_id)
+        number_of_crashes = len([f for f in os.listdir(crash_dir) if not f.startswith(".")]) if os.path.exists(crash_dir) else 0
+        if number_of_crashes > 0:
+            print(f"[!] WARN: Fuzzer terminated with {number_of_crashes} crash(es) collected across cluster.")
     finally:
         # Terminate all processes gracefully
         for proc in procs:
@@ -929,9 +1030,10 @@ def run_fuzzer(fuzzer_id: int):
         print(f"[+] Fuzzer execution message logged in the file: {fuzz_log}")
         try:
             plateau, fork = execution_until_coverage_saturation(proc, fuzzer_id, fuzz_log, False)
-            if not plateau and not fork:
-                number_of_crashes = len(os.listdir(crash_dir))
-                print(f"[!] WARN: Fuzzer termianted due to find {number_of_crashes} crashes. Please check logs and triage these crashes.")
+            copy_afl_crashes_to_crash_dir(fuzzer_id)
+            number_of_crashes = len([f for f in os.listdir(crash_dir) if not f.startswith(".")]) if os.path.exists(crash_dir) else 0
+            if number_of_crashes > 0:
+                print(f"[!] WARN: Fuzzer terminated with {number_of_crashes} crash(es).")
         finally:
             kill_fuzzer_process(proc.pid, sig=signal.SIGTERM, include_parent=True)
             try:
