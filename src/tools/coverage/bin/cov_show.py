@@ -10,6 +10,8 @@ import subprocess
 import sys
 import json
 import re
+import gc
+import glob
 
 from dataclasses import dataclass, field
 from typing import List, Optional
@@ -198,6 +200,7 @@ class CoverageUtils:
             record.fuzzer_ids.append(fuzzer_id)
             record.coverage.append(summary)
             record.finished_times.append(finish_millis)
+            gc.collect()
 
         # Whole-project full export (existing behavior — HTML + llvm_cov.json).
         CoverageUtils.export_llvm_cov_to_json(coverage_dir)
@@ -205,6 +208,9 @@ class CoverageUtils:
         CoverageUtils.copy_harness_coverage_files_to_whole(fuzzer_ids, coverage_dir)
         CoverageUtils.mark_whole_project_coverage_success(fuzzer_ids)
         record.save(record_path)
+        for p in glob.glob("/tmp/afl_queue_*") + glob.glob("/tmp/fuzzer_cov_*"):
+            shutil.rmtree(p, ignore_errors=True)
+        gc.collect()
 
     @staticmethod
     def _load_fuzzer_finish_times() -> dict[int, float]:
@@ -269,35 +275,67 @@ class CoverageUtils:
 
     @staticmethod
     def execute_fuzzer_cov_on_target(fuzzer_id: int, replay_mode: bool = False):
-        fuzzing_corpus_dir = ProjectUtils.get_fuzzer_fuzzing_corpus_dir(fuzzer_id)
-        if get_fuzzing_engine() == FuzzingEngine.AFLpp and replay_mode:
-            afl_queue_dir = CoverageUtils.get_and_copy_afl_fuzzer_queue_corpus(fuzzer_id)
-            if afl_queue_dir is not None:
-                fuzzing_corpus_dir = afl_queue_dir
-                print_debug(f"[+] Using AFL++ queue directory {afl_queue_dir} as fuzzing corpus for fuzzer {fuzzer_id:03d} coverage collection in replay mode.")
-        if not os.path.exists(fuzzing_corpus_dir):
-            raise Exception(f"[!] Error: The fuzzing corpus directory {fuzzing_corpus_dir} for fuzzer {fuzzer_id} does not exist!")
-        if len(os.listdir(fuzzing_corpus_dir)) == 0:
-            raise Exception(f"[!] Error: The fuzzing corpus directory {fuzzing_corpus_dir} for fuzzer {fuzzer_id:03d} is empty! Please report this error to the ManagerAgent and make sure the fuzzer {fuzzer_id:03d} has executed at least once by the tool `run_fuzzer`.")
         fuzzer_coverage_dir = ProjectUtils.get_fuzzer_coverage_dir(fuzzer_id)
         profraw_dir = os.path.join(fuzzer_coverage_dir, PROFRAW_DIR_NAME)
+        profdata_file = os.path.join(fuzzer_coverage_dir, PROFDATA_FILE_NAME)
+
+        # Fast path 1: If profdata already exists and is valid, and not replay_mode, skip execution
+        if os.path.exists(profdata_file) and os.path.getsize(profdata_file) > 0 and not replay_mode:
+            return
+
+        # Fast path 2: If profraw files already exist from an interrupted previous run, merge them directly
+        if os.path.exists(profraw_dir) and len(os.listdir(profraw_dir)) > 0:
+            print_debug(f"[+] Found {len(os.listdir(profraw_dir))} existing profraw files for fuzzer {fuzzer_id:03d}, merging directly...")
+            CoverageUtils.safety_merge_llvm_cov_profdata(profraw_dir, profdata_file)
+            shutil.rmtree(profraw_dir, ignore_errors=True)
+            gc.collect()
+            return
+
+        # Gather corpus files directly without copying to /tmp (avoids tens of thousands of duplicate files)
+        corpus_files = []
+        if get_fuzzing_engine() == FuzzingEngine.AFLpp and replay_mode:
+            afl_queue_dirs = ProjectUtils.get_afl_cache_fuzzer_queue_dirs(fuzzer_id)
+            if afl_queue_dirs:
+                for qdir in afl_queue_dirs:
+                    if os.path.exists(qdir):
+                        for file in os.listdir(qdir):
+                            p = os.path.join(qdir, file)
+                            if os.path.isfile(p):
+                                corpus_files.append(p)
+                print_debug(f"[+] Found {len(corpus_files)} AFL++ queue files across {len(afl_queue_dirs)} queue dirs for fuzzer {fuzzer_id:03d} (zero-copy).")
+
+        if not corpus_files:
+            fuzzing_corpus_dir = ProjectUtils.get_fuzzer_fuzzing_corpus_dir(fuzzer_id)
+            if not os.path.exists(fuzzing_corpus_dir):
+                raise Exception(f"[!] Error: The fuzzing corpus directory {fuzzing_corpus_dir} for fuzzer {fuzzer_id} does not exist!")
+            for file in os.listdir(fuzzing_corpus_dir):
+                p = os.path.join(fuzzing_corpus_dir, file)
+                if os.path.isfile(p):
+                    corpus_files.append(p)
+
+        if len(corpus_files) == 0:
+            raise Exception(f"[!] Error: The fuzzing corpus directory for fuzzer {fuzzer_id:03d} is empty! Please report this error to the ManagerAgent and make sure the fuzzer {fuzzer_id:03d} has executed at least once by the tool `run_fuzzer`.")
+
         if not os.path.exists(profraw_dir):
             os.makedirs(profraw_dir, exist_ok=True)
-        corpus_files = []
-        for file in os.listdir(fuzzing_corpus_dir):
-            corpus_files.append(os.path.join(fuzzing_corpus_dir, file))
 
-        with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
-            tmp_dir = os.path.join("/tmp", f"fuzzer_cov_tmp_{fuzzer_id}")
-            os.makedirs(tmp_dir, exist_ok=True)
-            futures = [executor.submit(CoverageUtils.execute_fuzzer_cov_on_one_corpus_file, fuzzer_id, id, file_path, profraw_dir, tmp_dir) for id, file_path in enumerate(corpus_files)]
-            for future in as_completed(futures):
-                future.result(timeout=10)
-            shutil.rmtree(tmp_dir, ignore_errors=True)
+        try:
+            with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
+                tmp_dir = os.path.join("/tmp", f"fuzzer_cov_tmp_{fuzzer_id}")
+                os.makedirs(tmp_dir, exist_ok=True)
+                futures = [executor.submit(CoverageUtils.execute_fuzzer_cov_on_one_corpus_file, fuzzer_id, id, file_path, profraw_dir, tmp_dir) for id, file_path in enumerate(corpus_files)]
+                for future in as_completed(futures):
+                    future.result(timeout=10)
+                shutil.rmtree(tmp_dir, ignore_errors=True)
 
-        print_debug(f"[+] Merging profdata files for fuzzer {fuzzer_id}...")
-        profdata_file = os.path.join(fuzzer_coverage_dir, PROFDATA_FILE_NAME)
-        CoverageUtils.safety_merge_llvm_cov_profdata(profraw_dir, profdata_file)
+            print_debug(f"[+] Merging profdata files for fuzzer {fuzzer_id}...")
+            CoverageUtils.safety_merge_llvm_cov_profdata(profraw_dir, profdata_file)
+        finally:
+            # CRITICAL CLEANUP: Always remove profraw_dir and force garbage collection
+            # to prevent hundreds of thousands of stale files from saturating Linux inodes, page cache, and RAM
+            if os.path.exists(profraw_dir):
+                shutil.rmtree(profraw_dir, ignore_errors=True)
+            gc.collect()
 
     @staticmethod
     def should_skip_whole_project_coverage(fuzzer_ids: list[int], force_regenerate: bool = False) -> bool:

@@ -107,8 +107,9 @@ def handle_whole_project_coverage_overview(replay_mode: bool = False):
 
     # Write run marker so downstream consumers (introspector) can verify
     # THIS invocation actually produced fresh data. Best-effort: marker
-    # failure does not fail the whole run.
+    # failure does not fail the whole run. Write both last_run.json and last-run.json for compatibility.
     marker_path = os.path.join(coverage_dir, "last_run.json")
+    marker_path_hyphen = os.path.join(coverage_dir, "last-run.json")
     try:
         llvm_cov_size = os.path.getsize(llvm_cov_json_file) if os.path.exists(llvm_cov_json_file) else 0
         fuzzer_ids = CoverageUtils.get_available_fuzzers()
@@ -122,7 +123,9 @@ def handle_whole_project_coverage_overview(replay_mode: bool = False):
         }
         with open(marker_path, "w") as fh:
             _json.dump(marker, fh, indent=2)
-        print_debug(f"[+] Wrote run marker to {marker_path}: {marker}")
+        with open(marker_path_hyphen, "w") as fh:
+            _json.dump(marker, fh, indent=2)
+        print_debug(f"[+] Wrote run marker to {marker_path} and {marker_path_hyphen}: {marker}")
     except Exception as exc:
         print(f"[!] WARNING: Failed to write run marker: {exc}")
 
