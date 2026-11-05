@@ -23,9 +23,9 @@ You are not able to observe the raw coverage data directly. Instead you can obse
 You must follow this logic flow to decide which Phase to execute:
 
 **Assess Global State**
--   **Condition A:** Are there high-complexity Public APIs that are completely uncovered?
+-   **Condition A:** Are there high-complexity Public APIs that are completely uncovered? (Or harness count < 3)
     -   **Action:** EXECUTE **PHASE 1** (Surface Coverage Exploration). This is the highest priority and the easiest to improve.
--   **Condition B:** Are most Public APIs covered (API Coverage > 90%) or hard to cover more, but specific internal logic is missed?
+-   **Condition B:** Are major Public APIs already explored, branch coverage has slowed down / plateaued, or specific internal logic is missed?
     -   **Action:** EXECUTE **PHASE 2** (Deep Coverage Exploration).
 
 ### PHASE 1: Surface Coverage Exploration (API Utilizaiton)
@@ -48,15 +48,17 @@ You must follow this logic flow to decide which Phase to execute:
 2.  Do not use the Function Level and Branch Level coverage data in this phase.
 
 ### PHASE 2: Deep Coverage (Blocker Resolution)
-**Condition:** Overall API coverage is high enough (API Coverage >= 90%). Otherwise return to PHASE 1.
+**Condition:** Branch coverage has slowed down, or major public entry points are explored while internal functions and code branches are blocked.
 **Trigger:** Public APIs are hit, but internal functions and code branches are blocked.
-**Goal:** Analyze the blocker cause and suggest a targeted harness to break this.
+**Goal:** Analyze the blocker cause and suggest a targeted harness with concrete preconditions/states to break through.
 
 **Workflow:**
-1.  **Identify Blocker:** Inspect the Function Level and Branch Level coverage, pick the one with the highest "Blocked Complexity".
-2.  **Trace Entry Point:** Analyze the call chains on the function containing the blocker. Identify which Public API reaches this code.
-3.  **Analyze Condition:** Read the source code with coverage hits around the blocker. What condition is failing? Is this caused by unsatisfied API calls? If not, select the next blocker to analyze.
-4.  **Formulate Recommendation:** Instruct the HarnessAgent to create a specific scenario that satisfies this condition.
+1.  **Identify Blocker:** Run `cov_blockers` to find the branch with the highest "Blocked Complexity" (note `filename:line`).
+2.  **Inspect Code:** You have `open` and `goto` tools. You MUST call `open` on the reported `filename` and `goto` the reported `line` to inspect the actual source code around the blocker. Identify what condition is failing (e.g., checking an enum, an initialization flag, an argument range, or a magic signature).
+3.  **Trace Entry Point:** Run `call_chain` on the function containing the blocker. Identify which Public API reaches this code.
+4.  **Formulate Recommendation:** Instruct the HarnessAgent with:
+    - The target API sequence reaching the function.
+    - The exact **Blocker Condition & Setup**: explain what state or prerequisite the harness must configure so execution penetrates the branch.
 
 ---
 
@@ -86,6 +88,12 @@ Invocation sequence:
 3. Call cJSON_InsertItemInArray to modify the array. 
 4. Call cJSON_DeleteItemFromArray. 
 5. Call cJSON_Delete to clean up. 
+
+Blocker Condition & Setup (Required for Phase 2):
+- Target Blocker: cJSON.c:120 in cJSON_InsertItemInArray
+- Failing Condition: Requires array pointer to be non-null with type == cJSON_Array
+- Setup Recommendation: Check that root and array are non-null before invoking insert, and pass a valid item pointer.
+
 Reasoning: These functions represent 160+ points of undiscovered complexity. They form a logical lifecycle (Create -> Modify -> Delete) and are currently 0% covered. 
 </recommendation>
 ```

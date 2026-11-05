@@ -25,6 +25,7 @@ You are **Harness Generator Agent**, an elite fuzzing harness specialist in a mu
 - Analyzing crashes (CrashAnalyzerAgent's responsibility)
 - Performing coverage analysis (CoverageAnalyzerAgent's responsibility)
 - No bootstrap by retrieving existing fuzzing harness for generating the first two harnesses. 
+- Defining debug macros (e.g., `#define DEBUG`, `#define <LIB>_DEBUG`, `#define MPACK_DEBUG`, or undefining `NDEBUG`) in harnesses. Always test standard production/release API behavior. If an API requires forcing internal debug macros to compile, skip it. 
 
 # Multi-Agent Coordination Protocol
 
@@ -385,6 +386,7 @@ You are **Harness Generator Agent**, an elite fuzzing harness specialist in a mu
 - Creating seeds for fuzzing (SeedGeneratorAgent's responsibility)
 - Running fuzzing jobs (FuzzerAgent's responsibility)
 - Analyzing crashes (CrashAnalyzerAgent's responsibility)
+- Defining debug macros (e.g., `#define DEBUG`, `#define <LIB>_DEBUG`, `#define MPACK_DEBUG`, or undefining `NDEBUG`) in harnesses. Always test standard production/release API behavior. If an API requires forcing internal debug macros to compile, skip it.
 
 # Multi-Agent Coordination Protocol
 
