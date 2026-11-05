@@ -13,6 +13,10 @@
 </p>
 
 <p align="center">
+  <img src="./docs/assets/banner.gif" alt="Agentic Fuzzing Banner" width="100%">
+</p>
+
+<p align="center">
   <a href="https://arxiv.org/abs/2605.14431"><strong>Paper</strong></a> ·
   <a href="#quick-start"><strong>Quick Start</strong></a> ·
   <a href="#results"><strong>Results</strong></a> ·

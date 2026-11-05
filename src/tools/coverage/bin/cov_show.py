@@ -291,7 +291,6 @@ class CoverageUtils:
             gc.collect()
             return
 
-        # Gather corpus files directly without copying to /tmp (avoids tens of thousands of duplicate files)
         corpus_files = []
         if get_fuzzing_engine() == FuzzingEngine.AFLpp and replay_mode:
             afl_queue_dirs = ProjectUtils.get_afl_cache_fuzzer_queue_dirs(fuzzer_id)
@@ -331,8 +330,6 @@ class CoverageUtils:
             print_debug(f"[+] Merging profdata files for fuzzer {fuzzer_id}...")
             CoverageUtils.safety_merge_llvm_cov_profdata(profraw_dir, profdata_file)
         finally:
-            # CRITICAL CLEANUP: Always remove profraw_dir and force garbage collection
-            # to prevent hundreds of thousands of stale files from saturating Linux inodes, page cache, and RAM
             if os.path.exists(profraw_dir):
                 shutil.rmtree(profraw_dir, ignore_errors=True)
             gc.collect()
