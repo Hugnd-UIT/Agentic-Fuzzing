@@ -18,8 +18,8 @@ class Reply:
     def _try_parse_cov_overview_output(self) -> dict[str, Any] | None:
         output_dir = self.config.output_dir
 
-        # Primary: .cache/coverage/whole/llvm-cov.json
-        llvm_cov_path = os.path.join(output_dir, ".cache", "coverage", "whole", "llvm-cov.json")
+        # Primary: .cache/coverage/whole/llvm_cov.json
+        llvm_cov_path = os.path.join(output_dir, ".cache", "coverage", "whole", "llvm_cov.json")
         log_file_info(llvm_cov_path, "whole_llvm_cov")
         if os.path.isfile(llvm_cov_path):
             try:
@@ -38,17 +38,17 @@ class Reply:
                     "branches": totals.get("branches", {}).get("covered"),
                 }
                 logger.info(
-                    "parsed whole/llvm-cov.json: coverage_percent=%s regions=%s functions=%s lines=%s branches=%s",
+                    "parsed whole/llvm_cov.json: coverage_percent=%s regions=%s functions=%s lines=%s branches=%s",
                     parsed["coverage_percent"], parsed["regions"], parsed["functions"],
                     parsed["lines"], parsed["branches"],
                 )
                 return parsed
             except (KeyError, IndexError, TypeError) as exc:
-                logger.error("whole/llvm-cov.json has unexpected shape: %s", exc)
+                logger.error("whole/llvm_cov.json has unexpected shape: %s", exc)
                 return None
 
         logger.error(
-            "whole/llvm-cov.json not found under %s/.cache/coverage/whole/",
+            "whole/llvm_cov.json not found under %s/.cache/coverage/whole/",
             output_dir,
         )
         return None
@@ -110,11 +110,11 @@ class Reply:
                 "cov_overview ran but fuzzer_count=0",
             )
 
-        # Check 4: llvm-cov.json non-empty
+        # Check 4: llvm_cov.json non-empty
         if not marker.get("llvm_cov_json_size"):
             raise AnalysisStepError(
                 "reply_full_coverage",
-                "cov_overview ran but llvm-cov.json size is 0",
+                "cov_overview ran but llvm_cov.json size is 0",
             )
 
         logger.info(
@@ -159,7 +159,7 @@ class Reply:
         if not parsed:
             raise AnalysisStepError(
                 "reply_full_coverage",
-                "no structured coverage produced, whole/llvm-cov.json missing or unparseable",
+                "no structured coverage produced, whole/llvm_cov.json missing or unparseable",
             )
 
         result = {

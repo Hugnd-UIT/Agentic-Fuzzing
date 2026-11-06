@@ -25,5 +25,8 @@ httpx_logger.setLevel(logging.CRITICAL)
 if __name__ == "__main__":        
     manager = ManagerAgent(agent_addresses=get_agent_addresses())
     user_input = INITIAL_INPUT_MESSAGE
-    while True:
-        manager.run(user_input)
+    try:
+        while True:
+            manager.run(user_input)
+    except KeyboardInterrupt:
+        logging.info("Fuzzing completed!")

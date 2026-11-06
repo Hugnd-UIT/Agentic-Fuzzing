@@ -31,6 +31,7 @@ declare -A TARGET_REPOS=(
     [simdjson]=https://github.com/simdjson/simdjson.git
     [bzip3]=https://github.com/kspalaiologos/bzip3.git
     [mpack]=https://github.com/ludocode/mpack.git
+    [libucl]=https://github.com/vstakhov/libucl.git
 )
 
 if [[ -t 1 && -z "${NO_COLOR+x}" && "${TERM:-}" != "dumb" ]]; then
