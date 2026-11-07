@@ -61,6 +61,7 @@ def init_environment():
     auto_clean = os.environ.get("AGENTIC_FUZZING_AUTO_CLEAN")
     if auto_clean == "1":
         delete = True
+        os.environ["AGENTIC_FUZZING_AUTO_CLEAN"] = "0"
     elif auto_clean == "0":
         delete = False
     elif not sys.stdin or not sys.stdin.isatty():
