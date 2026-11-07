@@ -154,7 +154,7 @@ class ACI:
         def _is_allowed_path(path_token: str) -> bool:
             if not path_token:
                 return True
-            # strip quotes and trailing shell operators (e.g. 2>/dev/null;)
+            # strip quotes
             path_token = path_token.strip().strip("'\"").rstrip(";&|").strip()
             # expand env vars and user
             path_token = os.path.expanduser(os.path.expandvars(path_token))
