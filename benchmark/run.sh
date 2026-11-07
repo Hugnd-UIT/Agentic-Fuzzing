@@ -156,7 +156,6 @@ export FUZZING_DURATION="${FUZZING_DURATION:-24h}"
 export COMMAND='bash /root/agentic-fuzzing/benchmark/run-benchmark.sh'
 export WRITE_MODE=rw
 export FUZZING_ENGINE=afl++
-export SANITIZER_MODE="${SANITIZER_MODE:-0}"
 export AGENTIC_FUZZING_AUTO_CLEAN="${AGENTIC_FUZZING_AUTO_CLEAN:-1}"
 export AGENTIC_FUZZING_DIR="$ROOT_DIR"
 export SRC_DIR="$TARGET_DIR"
