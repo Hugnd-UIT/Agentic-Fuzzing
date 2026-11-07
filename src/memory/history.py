@@ -23,10 +23,31 @@ class History:
         self.messages = messages
         self.original_messages = copy.deepcopy(messages)
 
-    def get_messages(self) -> List[Dict[str, Any]]:
+    def get_messages(self, max_epochs: int = 10) -> List[Dict[str, Any]]:
         """
         Get the message history.
         """
+        if max_epochs is None or len(self.messages) <= 2:
+            return self.messages
+
+        def _get_role(msg):
+            if isinstance(msg, dict):
+                return msg.get("role")
+            return getattr(msg, "role", None)
+
+        user_indices = [
+            i for i in range(2, len(self.messages))
+            if _get_role(self.messages[i]) == "user"
+        ]
+
+        if len(user_indices) > max_epochs:
+            cut_idx = user_indices[-max_epochs]
+            transition_msg = {
+                "role": "assistant",
+                "content": "[NOTE: Earlier conversation history omitted to maintain context window. Continuing from recent epochs.]"
+            }
+            return self.messages[:2] + [transition_msg] + self.messages[cut_idx:]
+
         return self.messages
     
     def get_original_messages(self) -> List[Dict[str, Any]]:
@@ -91,7 +112,7 @@ class History:
         Extends the history message to get a new messeage for query with function call.
         """
 
-        # OpenAI style
+        # Qwen style
         # new_msg = [
         #     {"role": "function", "tool_call_id": id, "name": name, "content": content},
         # ]
@@ -101,7 +122,7 @@ class History:
         #     {"role": "user", "tool_call_id": id, "name": name, "content": content},
         # ]
 
-        # Qwen style
+        # OpenAI style
         new_msg = [
             {"role": "tool", "tool_call_id": id, "name": name, "content": content},
         ]

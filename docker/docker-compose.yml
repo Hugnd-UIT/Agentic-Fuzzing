@@ -22,6 +22,7 @@ services:
       - AFL_SKIP_CPUFREQ=1
       - AFL_NUM_CORES=${AFL_NUM_CORES:-8}
       - PYTHONUNBUFFERED=1
+      - SANITIZER_MODE=${SANITIZER_MODE:-0}
       - UV_PROJECT_ENVIRONMENT=/root/.venv
       - UV_LINK_MODE=copy
       - FUZZING_ENGINE=${FUZZING_ENGINE}
@@ -29,8 +30,6 @@ services:
       - OPENAI_BASE_URL=${OPENAI_BASE_URL}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_MODEL=${OPENAI_MODEL}
-      # Per-model LLM tuning forwarded from Backend's llm_models.toml.
-      # Defaults match Core's LLMArgs so missing values still work.
       - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.6}
       - LLM_TOP_P=${LLM_TOP_P:-0.9}
       - LLM_TOP_K=${LLM_TOP_K:-20}
