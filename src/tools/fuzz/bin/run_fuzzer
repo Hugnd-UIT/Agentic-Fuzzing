@@ -22,13 +22,15 @@ from pathlib import Path
 import hashlib
 
 INTERVAL = 60
-MAX_RUNNING_TIME = 3600
+MAX_FUZZING_TIME = 3600
+MIN_FUZZING_TIME = int(os.environ.get("MIN_FUZZING_TIME", "900"))
+CONSECUTIVE_LIMIT = int(os.environ.get("CONSECUTIVE_LIMIT", "3"))
 
 COVERAGE_SATURATION_THRESHOLD = 0.0001
 COVERAGE_FT_SATURATION_THRESHOLD = 0.01
 
 # def no_traceback_hook(exc_type, exc_value, exc_traceback):
- #   print(f"{exc_type.__name__}: {exc_value}")
+#   print(f"{exc_type.__name__}: {exc_value}")
 
 # sys.excepthook = no_traceback_hook
 SANCOV_FUZZER="fuzzer_sancov"
@@ -402,20 +404,25 @@ def copy_afl_crashes_to_crash_dir(fuzzer_id: int):
 # Zero false positive engine
 # ==============================================================================
 
-# Genuine memory corruption vulnerabilities
-GENUINE_MEMORY_CORRUPTION_PATTERNS = frozenset({
+MEMORY_CRASH = frozenset({
     "heap-buffer-overflow",
     "stack-buffer-overflow",
     "global-buffer-overflow",
     "heap-use-after-free",
     "stack-use-after-free",
+    "stack-use-after-return",
     "double-free",
     "alloc-dealloc-mismatch",
     "use-after-poison",
+    "segmentation fault",
+    "sigsegv",
+    "bus error",
+    "sigbus",
+    "floating point exception",
+    "stack-overflow",
 })
 
-# API contract, precondition, and harness misuse signatures
-PRECONDITION_OR_HARNESS_PATTERNS = frozenset({
+HARNESS_CRASH = frozenset({
     "null pointer passed as argument",
     "invalid-null-argument",
     "assertion",
@@ -441,7 +448,6 @@ PRECONDITION_OR_HARNESS_PATTERNS = frozenset({
     "out of bounds",
 })
 
-# Generic crash wrappers and fatal signals
 GENERIC_CRASH_PATTERNS = frozenset({
     "addresssanitizer",
     "memorysanitizer",
@@ -455,8 +461,8 @@ GENERIC_CRASH_PATTERNS = frozenset({
     "==aborting",
 })
 
-# Combined set of all recognized crash signatures
-CRASH_SIGNATURES = GENUINE_MEMORY_CORRUPTION_PATTERNS | PRECONDITION_OR_HARNESS_PATTERNS | GENERIC_CRASH_PATTERNS
+# all crash signatures
+CRASH_SIGNATURES = MEMORY_CRASH | HARNESS_CRASH | GENERIC_CRASH_PATTERNS
 
 CRASH_SIGNAL_RETURN_CODES = frozenset({134, 136, 137, 138, 139})
 
@@ -557,7 +563,7 @@ def extract_crashing_frame_and_token(output: str, src_dir: str, harness_path: st
         }
 
     # 2. Check if this is a genuine memory corruption inside the library
-    is_memory_corruption = any(sig in out_lower for sig in GENUINE_MEMORY_CORRUPTION_PATTERNS)
+    is_memory_corruption = any(sig in out_lower for sig in MEMORY_CRASH)
     if is_memory_corruption:
         f0 = frames[0]
         return {
@@ -580,7 +586,7 @@ def extract_crashing_frame_and_token(output: str, src_dir: str, harness_path: st
             library_depth = i
             break
 
-    is_precondition_violation = any(sig in out_lower for sig in PRECONDITION_OR_HARNESS_PATTERNS)
+    is_precondition_violation = any(sig in out_lower for sig in HARNESS_CRASH)
     if harness_frame and (is_precondition_violation or library_depth <= 2):
         return {
             "found": True,
@@ -725,7 +731,7 @@ def harvest_and_triage_cluster_crashes(fuzzer_id: int, fuzzer_info, fuzz_profile
         return False, False
 
 def execution_until_coverage_saturation(proc: subprocess.Popen, fuzzer_id: int, fuzz_log: str, fork: bool, all_procs: list = None) -> tuple[bool, bool]: # return: is_plateau, need_fork
-    print(f"[+] Starting fuzzer monitoring with MAX_RUNNING_TIME={MAX_RUNNING_TIME}s, INTERVAL={INTERVAL}s")
+    print(f"[+] Starting fuzzer monitoring with MAX_FUZZING_TIME={MAX_FUZZING_TIME}s, INTERVAL={INTERVAL}s")
     fuzz_profile = ProjectUtils.get_fuzzer_profile()
     fuzzer_info = fuzz_profile.fuzzers.get(fuzzer_id, None)
     if fuzzer_info is None:
@@ -737,6 +743,7 @@ def execution_until_coverage_saturation(proc: subprocess.Popen, fuzzer_id: int, 
     prev_ft = 0
     ft = 0
     elapsed_time = 0
+    consecutive_plateaus = 0
     while True:
         sleep_seconds = 0
         # periodically check the fuzzing execution status
@@ -771,8 +778,8 @@ def execution_until_coverage_saturation(proc: subprocess.Popen, fuzzer_id: int, 
             if get_fuzzing_engine() == FuzzingEngine.LibFuzzer and sleep_seconds >= INTERVAL:
                 break
 
-        if elapsed_time >= MAX_RUNNING_TIME:
-            print(f"[+] Maximum running time ({MAX_RUNNING_TIME}s) reached after {elapsed_time:.2f}s. Exit.")
+        if elapsed_time >= MAX_FUZZING_TIME:
+            print(f"[+] Maximum running time ({MAX_FUZZING_TIME}s) reached after {elapsed_time:.2f}s. Exit.")
             break
 
         if get_fuzzing_engine() == FuzzingEngine.AFLpp:
@@ -818,9 +825,12 @@ def execution_until_coverage_saturation(proc: subprocess.Popen, fuzzer_id: int, 
         coverage_theta = abs(cov - prev_cov) / (1 if prev_cov == 0 else prev_cov)
         ft_theta = abs(ft - prev_ft) / (1 if prev_ft == 0 else prev_ft)
         if coverage_theta < COVERAGE_SATURATION_THRESHOLD and ft_theta < COVERAGE_FT_SATURATION_THRESHOLD:
-            print(f"[+] Epoch: {epoch}, elapsed: {elapsed_time:.2f}s, prev_{cov_name}: {prev_cov}, curr_{cov_name}: {cov}, prev_{ft_name}: {prev_ft}, curr_{ft_name}: {ft}, coverage_theta: {coverage_theta:.5f}, ft_theta: {ft_theta:.5f}, threshold: {COVERAGE_SATURATION_THRESHOLD}. Coverage saturation reached. Exit.")
-            break
-        print(f"[+] Epoch: {epoch}, elapsed: {elapsed_time:.2f}s, prev_{cov_name}: {prev_cov}, curr_{cov_name}: {cov}, prev_{ft_name}: {prev_ft}, curr_{ft_name}: {ft}, coverage_theta: {coverage_theta:.5f}, ft_theta: {ft_theta:.5f}, threshold: {COVERAGE_SATURATION_THRESHOLD}. Continue fuzzing...")
+            consecutive_plateaus += 1
+            if elapsed_time >= MIN_FUZZING_TIME and consecutive_plateaus >= CONSECUTIVE_LIMIT:
+                break
+        else:
+            consecutive_plateaus = 0
+            print(f"[+] Epoch: {epoch}, elapsed: {elapsed_time:.2f}s, prev_{cov_name}: {prev_cov}, curr_{cov_name}: {cov}, prev_{ft_name}: {prev_ft}, curr_{ft_name}: {ft}, coverage_theta: {coverage_theta:.5f}, ft_theta: {ft_theta:.5f}, threshold: {COVERAGE_SATURATION_THRESHOLD}. Continue fuzzing...")
         prev_cov = cov
         prev_ft = ft
         prev_epoch = epoch
@@ -918,7 +928,8 @@ def speeding_afl_by_fork(cmd: list, envs: dict, fuzz_log: str, output_dir: str, 
             slave_f = open(slave_fuzz_log, "w")
             log_files.append(slave_f)
             sched = schedules[i % len(schedules)]
-            afl_cmd = cmd[:index - 2] + ["-S", f"slave{i}", "-p", sched] + cmd[index:]
+            extra_slave_flags = ["-L"] if i == 0 else []
+            afl_cmd = cmd[:index - 2] + ["-S", f"slave{i}", "-p", sched] + extra_slave_flags + cmd[index:]
             proc = subprocess.Popen(afl_cmd, env=slave_envs, stdout=slave_f, stderr=subprocess.STDOUT, cwd=output_dir, bufsize=1, text=True)
             procs.append(proc)
 
@@ -962,7 +973,7 @@ def run_fuzzer(fuzzer_id: int):
     # initialize fuzzing corpus
     initialize_fuzzing_corpus(fuzzer_id)
     print(f"[+] Starting fuzzer {fuzzer_id} with configuration:")
-    print(f"    - MAX_RUNNING_TIME: {MAX_RUNNING_TIME}s")
+    print(f"    - MAX_FUZZING_TIME: {MAX_FUZZING_TIME}s")
     print(f"    - OBSERVATION_INTERVAL: {INTERVAL}s")
     print(f"    - COVERAGE_SATURATION_THRESHOLD: {COVERAGE_SATURATION_THRESHOLD}")
 
@@ -988,7 +999,7 @@ def run_fuzzer(fuzzer_id: int):
         "--unshare-net",
         "--bind", output_dir, output_dir, # 4. mount output_dir as read-write (Read-Write)
         "--bind", crash_dir, crash_dir,   # 5. mount crash_dir as read-write (Read-Write)
-        "--tmpfs", "/tmp",           # Provide an isolated in-memory /tmp for mkstemp
+        "--tmpfs", "/tmp",           
         "--die-with-parent",         # 6. parent process dies, child process dies too
         "--new-session",             # 7. create new process session
     ]

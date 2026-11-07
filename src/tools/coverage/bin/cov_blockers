@@ -34,9 +34,9 @@ class LLVMBranchBlocker:
             for branch in branches:
                 true_branch_cnt = branch[4]
                 flase_branch_cnt = branch[5]
-                if true_branch_cnt > 0:
+                if true_branch_cnt == 0:
                     undiscovered_complexity += 1
-                if flase_branch_cnt > 0:
+                if flase_branch_cnt == 0:
                     undiscovered_complexity += 1
             func["complexity"] = complexity
             func["undiscovered_complexity"] = undiscovered_complexity
