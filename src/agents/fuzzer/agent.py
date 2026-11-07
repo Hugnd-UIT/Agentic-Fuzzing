@@ -33,7 +33,7 @@ class FuzzerAgent(BaseAgent):
             agents=[]
         )
         self.system_prompt = self.format_system_prompt()
-        self.logger.log(level=logging.INFO, msg="Fuzzer Executor Agent Initialized.")
+        self.logger.log(level=logging.INFO, msg="Fuzzer Agent Initialized.")
 
     @override
     def format_system_prompt(self) -> str:

@@ -69,7 +69,7 @@ $OUTPUT/
 │     └── logs/ # Fuzzing logs
 ├── coverage_guidance/ # Coverage guidance for the fuzzing campaign 
 └── crash_reports/ # Crash analysis reports
-    ├── lib_bug/ # Library vulnerabilities
+    ├── library_bug/ # Library vulnerabilities
     └── harness_bug/ # Harness misuse/errors
 """
 
@@ -135,7 +135,7 @@ $OUTPUT/
 │     ├── crashes/ # Fuzzing crashes
 │     └── logs/ # Fuzzing logs
 └── crash_reports/ # Crash analysis reports
-    ├── lib_bug/ # Library vulnerabilities
+    ├── library_bug/ # Library vulnerabilities
     └── harness_bug/ # Harness misuse/errors
 """
 

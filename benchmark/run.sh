@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -32,6 +33,7 @@ declare -A TARGET_REPOS=(
     [bzip3]=https://github.com/kspalaiologos/bzip3.git
     [mpack]=https://github.com/ludocode/mpack.git
     [libucl]=https://github.com/vstakhov/libucl.git
+    [libmobi]=https://github.com/bfabiszewski/libmobi.git
 )
 
 if [[ -t 1 && -z "${NO_COLOR+x}" && "${TERM:-}" != "dumb" ]]; then

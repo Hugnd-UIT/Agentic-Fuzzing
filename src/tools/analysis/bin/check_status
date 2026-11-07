@@ -84,11 +84,11 @@ def get_crash_summary(fuzzer_id: int) -> str:
         report_dir = ProjectUtils.get_project_crash_report_dir()
         candidate_paths = [
             os.path.join(report_dir, f"crash_{fuzzer_id:03d}", "crash_report.md"),
-            os.path.join(report_dir, "lib_bug", f"crash_{fuzzer_id:03d}", "crash_report.md"),
+            os.path.join(report_dir, "library_bug", f"crash_{fuzzer_id:03d}", "crash_report.md"),
             os.path.join(report_dir, "harness_bug", f"crash_{fuzzer_id:03d}", "crash_report.md"),
         ]
-        # Check all subdirectories in lib_bug, harness_bug, and root
-        for category in ["lib_bug", "harness_bug", ""]:
+        # Check all subdirectories in library_bug, harness_bug, and root
+        for category in ["library_bug", "harness_bug", ""]:
             search_dir = os.path.join(report_dir, category) if category else report_dir
             if not os.path.exists(search_dir):
                 continue

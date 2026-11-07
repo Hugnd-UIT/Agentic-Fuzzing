@@ -53,9 +53,9 @@ def report_crash(fuzzer_id: int, crash_artifact_path: str, triage: str, content:
     if not os.path.exists(fuzzer_binary):
         print(f"!] ERROR: fuzzer binary does not exist: {fuzzer_binary}")
         exit(-1)
-    
+     
     crash_report_dir = ProjectUtils.get_project_crash_report_dir()
-    category = "lib_bug" if triage == "library-bug" else "harness_bug"
+    category = "library_bug" if triage == "library-bug" else "harness_bug"
     category_dir = os.path.join(crash_report_dir, category)
     os.makedirs(category_dir, exist_ok=True)
 
