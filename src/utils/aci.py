@@ -108,7 +108,7 @@ class ACI:
           Allowed directories: $OUTPUT, $SRC (from self.env_variables or os.environ), and /tmp and their subdirectories.
         """
 
-        editor_commands_pattern = r"\b(nano|vi|vim|emacs|gedit|pico|crontab -e|ex|jed|joe|mcedit|nedit|pico|rlwrap|scite|vimx|xemacs|zile|exit)\b"
+        editor_commands_pattern = r"(?:^|[;&|]\s*)(?:nano|vi|vim|emacs|gedit|pico|crontab\s+-e|ex|jed|joe|mcedit|nedit|rlwrap|scite|vimx|xemacs|zile|exit)(?:\s+|$|[;&|])"
 
         if not command:
             return False
@@ -158,8 +158,8 @@ class ACI:
             path_token = path_token.strip().strip("'\"").rstrip(";&|").strip()
             # expand env vars and user
             path_token = os.path.expanduser(os.path.expandvars(path_token))
-            # ignore obvious non-path tokens (like &, |, ;, pipelines)
-            if path_token in {"|", "&", ";"}:
+            # ignore obvious non-path tokens
+            if path_token in {"|", "&", ";"} or re.match(r"^&(\d+|-)$", path_token):
                 return True
             # If token looks like a file descriptor (/dev/...) allow (not a workspace write)
             # But conservative approach: check real path if possible
