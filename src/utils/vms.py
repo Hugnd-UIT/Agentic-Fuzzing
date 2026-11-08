@@ -67,7 +67,7 @@ class VMS:
 
         # Check index file
         if not os.path.exists(INDEX_FILE):
-            raise FileNotFoundError("Version system not initialized. Run 'init' first.")
+            self.init_vms()
 
         # Read index data
         with open(INDEX_FILE, "r") as f:

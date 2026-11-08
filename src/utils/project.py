@@ -177,6 +177,10 @@ def init_environment():
         print("[+] VMS deleted.\n[+] Initializing new VMS...")
         PROJECT_VMS.init_vms()
         print("[+] New VMS initialized.")
+    elif PROJECT_VMS and not os.path.exists(os.path.join(_project_output_dir, ".vms", "index.json")):
+        print("[+] Initializing new VMS...")
+        PROJECT_VMS.init_vms()
+        print("[+] New VMS initialized.")
     print("[+] Environment initialization completed.")
 
 class FuzzerExecutionState(Enum):
