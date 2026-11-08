@@ -1,39 +1,6 @@
-FuzzAgent Dual License
-
-Copyright (C) 2026 FuzzAgent Authors
-
-FuzzAgent is distributed as a whole under a dual-license model.
-You may use FuzzAgent under either:
-
-1. GNU Affero General Public License, Version 3 only (AGPL-3.0-only), as
-   reproduced below; or
-
-2. A separate commercial license obtained from the applicable copyright
-   holders. The commercial license may permit use, modification,
-   distribution, or network deployment without the obligations of the
-   AGPL-3.0-only. No commercial license is granted by this file.
-
-   If you cannot comply with the requirements of AGPL-3.0-only for your
-   intended use of FuzzAgent, obtain a separate commercial license
-   before proceeding.
-
-Commercial licensing contact: [fuzzanything@gmail.com](mailto:fuzzanything@gmail.com)
-
-Applicable upstream license conditions continue to apply to included
-third-party code under either option. Upstream copyright notices, license
-texts, and permissions are preserved. See THIRD_PARTY_NOTICES and
-THIRD_PARTY_LICENSES/ for component details and license texts.
-
-Perses is a separate, optional external program and is not part of the
-FuzzAgent distribution. It and other separately installed external
-programs retain their own licenses. A commercial license for FuzzAgent
-does not cover Perses or grant exceptions to its GPL-3.0-or-later terms.
-FuzzAgent's installer and command-line adapter are covered by this file;
-see THIRD_PARTY_NOTICES for details of the external integration.
-
--------------------------------------------------------------------------------
-
                     GNU AFFERO GENERAL PUBLIC LICENSE
+              Copyright (C) 2026 Nguyen Duy Hung <Hugnd-UIT>
+All rights reserved for project modifications, integrations, and new features.
                        Version 3, 19 November 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -664,12 +631,13 @@ to attach them to the start of each source file to most effectively
 state the exclusion of warranty; and each file should have at least
 the "copyright" line and a pointer to where the full notice is found.
 
-    <one line to give the program's name and a brief idea of what it does.>
-    Copyright (C) <year>  <name of author>
+    Agentic Fuzzing - LLM-driven Automated Vulnerability Discovery Framework.
+    Copyright (C) 2026  Nguyen Duy Hung <Hugnd-UIT>
+    Based on: Copyright (C) 2026  FuzzAgent
 
     This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
     This program is distributed in the hope that it will be useful,
@@ -694,10 +662,3 @@ specific requirements.
 if any, to sign a "copyright disclaimer" for the program, if necessary.
 For more information on this, and how to apply and follow the GNU AGPL, see
 <https://www.gnu.org/licenses/>.
-
--------------------------------------------------------------------------------
-
-If you cannot comply with the requirements of AGPL-3.0-only for your intended
-use of FuzzAgent, obtain a separate commercial license before proceeding.
-
-To obtain a commercial license, contact [fuzzanything@gmail.com](mailto:fuzzanything@gmail.com).
