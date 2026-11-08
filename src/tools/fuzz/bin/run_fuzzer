@@ -20,6 +20,7 @@ import multiprocessing
 import psutil
 from pathlib import Path
 import hashlib
+import glob
 
 INTERVAL = 60
 MAX_FUZZING_TIME = 3600
@@ -633,8 +634,8 @@ def pre_triage_and_dedup_crashes(fuzzer_id: int) -> dict:
     print(f"[*] Analyzing {len(crash_files)} crash file(s)...")
 
     env = os.environ.copy()
-    env["ASAN_OPTIONS"] = "detect_leaks=0:abort_on_error=1:symbolize=1"
-    env["UBSAN_OPTIONS"] = "print_stacktrace=1:halt_on_error=0:symbolize=1"
+    env["ASAN_OPTIONS"] = "detect_leaks=0:abort_on_error=1:symbolize=1:log_path=/tmp/san_log"
+    env["UBSAN_OPTIONS"] = "print_stacktrace=1:halt_on_error=0:symbolize=1:log_path=/tmp/san_log"
 
     library_crashes_by_token = {}
     harness_crashes = []
@@ -645,6 +646,9 @@ def pre_triage_and_dedup_crashes(fuzzer_id: int) -> dict:
         try:
             proc = subprocess.run([fuzzer_binary, cfile], capture_output=True, timeout=3, env=env, text=True)
             out = proc.stdout + "\n" + proc.stderr
+            for lf in glob.glob("/tmp/san_log*"):
+                try: out += "\n" + open(lf, errors="ignore").read(); os.remove(lf)
+                except Exception: pass
             ret = proc.returncode
             if not is_genuine_crash(out, ret):
                 fake_crashes.append(cfile)
