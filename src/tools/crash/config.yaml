@@ -11,6 +11,7 @@ tools:
       You still need to decide what to do next based on the process you have executed,
       the feedback you received, and the actual situation of your current working
       directory.
+
   build_poc:
     timeout: 1200
     signature: build_poc <fuzzer_id>
@@ -25,6 +26,7 @@ tools:
           The fuzzer (or harness) instance ID to generate minimized harness
           for.
         required: true
+
   triage_crash:
     timeout: 60
     signature: triage_crash <fuzzer_id> <crash_artifact_path>
@@ -44,6 +46,7 @@ tools:
           Path to the artifact file that caused the crash artifact, which
           is usually named as "crash-<hash>", must be a file, not a directory
         required: true
+
   debug_crash:
     timeout: 120
     signature:
@@ -75,6 +78,7 @@ tools:
           Pass 1 to clear the session history before executing the new commands,
           0 otherwise. Default is 0.
         required: false
+
   report_crash:
     timeout: 10
     signature: report_crash "<fuzzer_id>" "<crash_artifact_path>" "<triage>"

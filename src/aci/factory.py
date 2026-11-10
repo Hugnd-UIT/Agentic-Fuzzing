@@ -4,7 +4,7 @@ from .prompt import (
     TOOL_CALL_RESPONSE_PROMPT
 )
 from typing import List
-from src.agents_2_agents.types import AgentCard
+from src.a2a.types import AgentCard
 
 from src.utils.project import get_project_source_dir, get_project_output_dir
 

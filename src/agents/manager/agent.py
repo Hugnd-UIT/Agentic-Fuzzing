@@ -1,6 +1,6 @@
 from typing import List, Optional, Callable
-from src.agents_2_agents.client import A2ACardResolver
-from src.agents_2_agents.types import (
+from src.a2a.client import A2ACardResolver
+from src.a2a.types import (
     AgentCard
 )
 from src.agents.agent import BaseAgent

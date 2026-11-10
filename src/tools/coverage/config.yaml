@@ -3,6 +3,7 @@ tools:
     timeout: 1200
     signature: cov_overview
     docstring: Displays the overall code coverage statistics for the project.
+
   cov_module:
     timeout: 1200
     signature: cov_module <path> <page> [options]
@@ -16,15 +17,17 @@ tools:
         type: integer
         description: The page number to show coverage for. Defaults to 1.
         required: true
+
   cov_file:
     timeout: 1200
-    signature: cov_file  <page> [options]
+    signature: cov_file <page> [options]
     docstring: Displays the file-level code coverage statistics for the project.
     arguments:
       - name: page
         type: integer
         description: The page number to show coverage for. Defaults to 1.
         required: true
+
   cov_api:
     timeout: 1200
     signature: cov_api <page> [options]
@@ -34,6 +37,7 @@ tools:
         type: integer
         description: The page number to show coverage for. Defaults to 1.
         required: true
+
   cov_func:
     timeout: 1200
     signature: cov_func <page> <search_func> [options]
@@ -47,10 +51,12 @@ tools:
         type: string
         description: The function name to search (not regex), all matches will be displayed. Defaults to ''.
         required: false
+
   cov_blockers:
     timeout: 1200
     signature: cov_blockers
     docstring: Displays the branch blocker-level code coverage statistics for the project.
+
   call_chain:
     timeout: 1200
     signature: call_chain <target_func>
@@ -60,6 +66,7 @@ tools:
         type: string
         description: The target function to analyze the call chain to.
         required: true
+
   cov_report:
     timeout: 10
     signature: cov_report <harness_id> <content>

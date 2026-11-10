@@ -58,7 +58,7 @@ Please ensure the summary content is accurate, concise, and practically valuable
 """
 
 
-class Summary:
+class Summarize:
     """LLM-based agent runtime summarizer"""
     
     def __init__(self):
@@ -71,7 +71,7 @@ class Summary:
                 else CONFIG.LLMARGs["LLM_REPLY_TIMEOUT"]
             ),
         )
-        self.logger = get_logger("Summary")
+        self.logger = get_logger("Summarize")
         self.summary_file = get_agent_summary_file()
         
 
@@ -306,4 +306,4 @@ class Summary:
             self.logger.error(f"Failed to generate summary: {e}")
 
 
-__all__ = ["Summary"]
+__all__ = ["Summarize"]

@@ -8,6 +8,7 @@ tools:
         type: string
         description: The command to run to interact with the system. If you need to search one file/directory or read/edit file contents, __PLEASE USE THE PROVIDED FUNCTIONS (open, edit, find_file, goto, scroll_up, scroll_down, write_file, etc.)__ rather than Linux commands (e.g. cat, less, more, fine, head, tail, find, echo, etc.).
         required: true
+
   send_agent_task:
     signature: send_agent_task <agent_name> <task_description>
     docstring: Send a task to a specific agent.
@@ -30,6 +31,7 @@ tools:
         type: string
         description: The detailed description of the task to send to the agent.
         required: true
+
   exit:
     signature: exit <exit_reason> <force>
     docstring: Exit the task. You can only exit the task when you are sure your task is finished.

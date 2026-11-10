@@ -7,6 +7,7 @@ tools:
         type: string
         description: The path of dictionary file you want to validate.
         required: true
+
   dict_track:
     signature: dict_track "<task_kind>" "<action>" "<project_names>"
     docstring: Record and track the web retrieve progress for the given task kind and project names. 

@@ -12,6 +12,7 @@ tools:
         type: integer
         description: the line number to move the window to (if not provided, the window will start at the top of the file)
         required: false
+
   write_file:
     timeout: 30
     signature: |-
@@ -29,6 +30,7 @@ tools:
         description: the content to write to the file. 
         required: true
         redirect: true
+
   goto:
     timeout: 30
     signature: goto <line_number>
@@ -38,14 +40,17 @@ tools:
         type: integer
         description: the line number to move the window to
         required: true
+
   scroll_up:
     timeout: 30
     signature: scroll_up
     docstring: moves the window up {WINDOW} lines
+
   scroll_down:
     timeout: 30
     signature: scroll_down
     docstring: moves the window down {WINDOW} lines
+
   edit:
     timeout: 30
     signature: |-
@@ -71,11 +76,13 @@ tools:
         description: the text to replace the current selection with
         required: true
         redirect: true
+
   undo_edit:
     timeout: 30
     signature: undo_edit
     docstring: undoes the last edit operation by restoring the file from the backup created in /tmp directory. This will revert the file to its state before the most recent edit command.
     arguments: []
+
   write_bin:
     timeout: 30
     signature: |-
@@ -97,6 +104,7 @@ tools:
         type: string
         description: "encoding of the input string (`hex` or `base64`, default: `hex`)"
         required: false
+
   search_dir:
     timeout: 30
     signature: search_dir <search_term> [<dir>]
@@ -110,6 +118,7 @@ tools:
         type: string
         description: the directory to search in
         required: false
+
   search_file:
     timeout: 30
     signature: search_file <search_term> [<file>]
@@ -123,6 +132,7 @@ tools:
         type: string
         description: the file to search in (if not provided, searches in the current open file)
         required: false
+
   find_file:
     timeout: 30
     signature: find_file <file_name> [<dir>]
@@ -136,6 +146,7 @@ tools:
         type: string
         description: the directory to search in
         required: false
+
   search_web:
     timeout: 60
     max_output_lines: 1500
