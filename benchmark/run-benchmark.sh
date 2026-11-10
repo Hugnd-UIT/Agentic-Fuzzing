@@ -14,4 +14,4 @@ fi
 
 echo "Benchmark complete. Exporting full code coverage."
 bash /root/agentic-fuzzing/src/tools/copy-tools.sh
-exec uv run python -m review
+exec uv run python -m src.review.main

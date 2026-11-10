@@ -10,19 +10,19 @@ after the core fuzzing engine finishes, producing structured JSON output.
 export OUTPUT=/path/to/fuzzing/output/project_name
 
 # Run the review analysis step
-python3 -m review
+python3 -m src.review.main
 ```
 
 ## Architecture
 
 Each analysis module exposes a single `analyze() -> dict | None`
-method. The `__main__` entry-point iterates over the registered steps with
+method. The `main` entry-point iterates over the registered steps with
 per-step error isolation — one failure does not block the others.
 
 ```
-review/
+src/review/
   __init__.py              # Package marker
-  __main__.py              # Entry-point: python3 -m review
+  main.py                  # Entry-point: python3 -m src.review.main
   config.py                # Config — unified path discovery from $OUTPUT
   catch.py                 # Error / PathMissingError / AnalysisStepError
   report.py                # write_json() + try_write_png() (matplotlib optional)
@@ -87,7 +87,7 @@ data into the final coverage summary that the Storage normalizer consumes.
   warning and returns `None`.
 - **`AnalysisStepError`** — A step-specific failure (e.g. a tool not found);
   logged and skipped.
-- **Unexpected exceptions** — Caught at the `__main__` level; logged with full
+- **Unexpected exceptions** — Caught at the `main` level; logged with full
   traceback, other steps continue.
 
 If all steps fail, the process exits with code 1. Otherwise it exits 0
@@ -99,7 +99,7 @@ The Controller automatically launches an analysis container after a fuzzing
 task completes successfully. It reuses the same Docker image and compose
 template, changing only:
 
-- `command`: `bash /root/Agentic Fuzzing/src/tools/copy-tools.sh && python3 -m review`
+- `command`: `bash /root/Agentic Fuzzing/src/tools/copy-tools.sh && python3 -m src.review.main`
 - `auto_clean`: `0` (prevents output deletion)
 - `write_mode`: `True` (allows writing analysis JSON)
 - `container_name`: `{original_name}_analysis`

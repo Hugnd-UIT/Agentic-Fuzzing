@@ -7,6 +7,10 @@ import logging
 load_dotenv(".env") # Load environment
 subprocess.run(["/bin/bash", os.path.join(os.path.dirname(__file__), "src/tools/copy-tools.sh")], check=True)
 
+from src.utils.project import init_environment
+
+init_environment()
+
 from src.agents.manager.agent import ManagerAgent
 from src.utils.config import get_agent_addresses
 from src.utils.config import CONFIG
