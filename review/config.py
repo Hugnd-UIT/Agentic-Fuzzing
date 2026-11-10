@@ -14,7 +14,7 @@ class Config:
     cache_dir: str
     log_dir: str
     vms_dir: str
-    introspector_dir: str
+    review_dir: str
     build_dir: str
     fuzzers_dir: str
     cache_fuzzers_dir: str
@@ -39,7 +39,7 @@ class Config:
             cache_dir=os.path.join(output_dir, ".cache"),
             log_dir=os.path.join(output_dir, ".cache", "logs"),
             vms_dir=os.path.join(output_dir, ".vms"),
-            introspector_dir=os.path.join(output_dir, ".cache", "introspector"),
+            review_dir=os.path.join(output_dir, ".cache", "review"),
             build_dir=os.path.join(output_dir, "build"),
             fuzzers_dir=os.path.join(output_dir, "fuzzers"),
             cache_fuzzers_dir=os.path.join(output_dir, ".cache", "fuzzers"),
@@ -47,8 +47,8 @@ class Config:
             project_name=name,
         )
 
-    def ensure_introspector_dir(self) -> None:
-        os.makedirs(self.introspector_dir, exist_ok=True)
+    def ensure_review_dir(self) -> None:
+        os.makedirs(self.review_dir, exist_ok=True)
 
     def require_dir(self, path: str, name: str) -> None:
         """

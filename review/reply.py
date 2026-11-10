@@ -53,7 +53,7 @@ class Reply:
         )
         return None
 
-    def _verify_run_marker(self, introspector_start_wall: datetime) -> None:
+    def _verify_run_marker(self, review_start_wall: datetime) -> None:
         marker_path = os.path.join(
             self.config.output_dir, ".cache", "coverage", "whole", "last-run.json"
         )
@@ -94,11 +94,11 @@ class Reply:
                 "reply_full_coverage",
                 f"cov_overview marker has invalid completed_at={completed_at_str!r}: {exc}",
             )
-        if completed_at < introspector_start_wall:
+        if completed_at < review_start_wall:
             raise AnalysisStepError(
                 "reply_full_coverage",
                 f"cov_overview marker completed_at={completed_at.isoformat()} is "
-                f"BEFORE this introspector started at {introspector_start_wall.isoformat()} "
+                f"BEFORE this review started at {review_start_wall.isoformat()} "
                 "cov_overview did not actually re-run; it may have skipped or errored silently",
             )
 
@@ -129,7 +129,7 @@ class Reply:
             logger.warning("Skipping final-coverage: %s", exc)
             return None
 
-        introspector_start_wall = datetime.now(timezone.utc)
+        review_start_wall = datetime.now(timezone.utc)
 
         try:
             run_logged(
@@ -153,7 +153,7 @@ class Reply:
             raise AnalysisStepError("reply_full_coverage", detail)
 
         # Verify cov_overview actually did work in THIS run.
-        self._verify_run_marker(introspector_start_wall)
+        self._verify_run_marker(review_start_wall)
 
         parsed = self._try_parse_cov_overview_output()
         if not parsed:

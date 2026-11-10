@@ -45,7 +45,7 @@ $OUTPUT/
     fuzzers/               # Fuzzer working directories
     coverage/              # LLVM profdata files per fuzzer
     fuzzer_stat.json       # Fuzzer finish timestamps
-    introspector/          # Output directory (created automatically)
+    review/                # Output directory (created automatically)
   .vms/
     index.json             # VM snapshots with agent phase timestamps
   build/
@@ -56,7 +56,7 @@ $OUTPUT/
 
 ## Remaining Analysis Step
 
-The single step produces a JSON file under `$OUTPUT/.cache/introspector/`.
+The single step produces a JSON file under `$OUTPUT/.cache/review/`.
 Missing data causes the step to be skipped with a warning.
 
 ### Final Coverage Reply → `final_coverage.json`

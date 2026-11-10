@@ -105,7 +105,7 @@ def handle_whole_project_coverage_overview(replay_mode: bool = False):
     merged_project_stats = MergedProjectStats(ProjectUtils.list_all_harnesses(), llvm_cov)
     print(merged_project_stats.summary())
 
-    # Write run marker so downstream consumers (introspector) can verify
+    # Write run marker so downstream consumers (review) can verify
     # THIS invocation actually produced fresh data. Best-effort: marker
     # failure does not fail the whole run. Write both last_run.json and last-run.json for compatibility.
     marker_path = os.path.join(coverage_dir, "last_run.json")

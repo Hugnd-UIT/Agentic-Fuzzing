@@ -22,19 +22,19 @@ def main() -> None:
         print(f"Configuration error: {exc}", file=sys.stderr)
         sys.exit(1)
 
-    config.ensure_introspector_dir()
-    log_file = os.path.join(config.introspector_dir, "agentic_fuzzing_reviewer.log")
+    config.ensure_review_dir()
+    log_file = os.path.join(config.review_dir, "agentic_fuzzing_reviewer.log")
     configure_logging(log_file)
 
     logger = get_logger()
 
     # === Startup banner ===
     logger.info("=" * 60)
-    logger.info("Introspector starting (pid=%d host=%s)", os.getpid(), socket.gethostname())
+    logger.info("Review starting (pid=%d host=%s)", os.getpid(), socket.gethostname())
     logger.info("Python %s", sys.version.split()[0])
     logger.info("Plan: %d steps: %s", len(ANALYSIS_STEPS), [s[0] for s in ANALYSIS_STEPS])
     logger.info("Output directory:   %s", config.output_dir)
-    logger.info("Introspector dir:   %s", config.introspector_dir)
+    logger.info("Review dir:         %s", config.review_dir)
     logger.info("VMS directory:      %s", config.vms_dir)
     logger.info("Cache coverage dir: %s", config.cache_coverage_dir)
     logger.info("Cache fuzzers dir:  %s", config.cache_fuzzers_dir)
@@ -56,7 +56,7 @@ def main() -> None:
             data = analyzer.analyze()
             duration = time.monotonic() - step_start
             if data is not None:
-                write_json(config.introspector_dir, json_filename, data)
+                write_json(config.review_dir, json_filename, data)
                 results[step_name] = data
                 logger.info("STEP END %s status=ok duration=%.2fs", step_name, duration)
             else:

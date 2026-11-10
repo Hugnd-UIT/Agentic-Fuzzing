@@ -18,7 +18,7 @@ def get_logger(name: str | None = None) -> logging.Logger:
 
 
 def configure_logging(log_file: str, *, level: str | None = None) -> None:
-    log_level = (level or os.getenv("INTROSPECTOR_LOG_LEVEL") or "INFO").upper()
+    log_level = (level or os.getenv("REVIEW_LOG_LEVEL") or "INFO").upper()
     fmt = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     root = logging.getLogger()
