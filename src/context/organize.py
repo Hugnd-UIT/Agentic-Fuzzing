@@ -4,7 +4,7 @@ from logging import Logger
 import copy
 from openai.types.chat import ChatCompletionMessage
 
-class Memorize:
+class Organize:
     """
     Agent history message processor.
     """
@@ -163,4 +163,4 @@ class Memorize:
         self.original_messages = []
 
 
-__all__ = ["Memorize"]
+__all__ = ["Organize"]

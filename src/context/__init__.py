@@ -1,7 +1,7 @@
-from .memorize import Memorize
+from .organize import Organize
 from .summarize import Summarize
 
 __all__ = [
-    "Memorize",
+    "Organize",
     "Summarize",
 ]

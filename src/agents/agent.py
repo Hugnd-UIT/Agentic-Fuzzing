@@ -3,7 +3,7 @@ from openai import OpenAI
 import httpx
 from abc import ABC, abstractmethod
 from src.utils.config import CONFIG
-from src.context import Memorize, Summarize
+from src.context import Organize, Summarize
 from typing import List
 from src.aci.factory import ACI as ACIPromptFactory
 from src.utils.llm import query_llm
@@ -38,7 +38,7 @@ class BaseAgent(ABC):
     def __init__(self):
         self.summary = Summarize()
         self.summarizer = self.summary
-        self.history = Memorize(logger=self.logger)
+        self.history = Organize(logger=self.logger)
         self.history_processor = self.history
         self.token_warning_sent = False
 
