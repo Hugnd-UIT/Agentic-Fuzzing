@@ -104,7 +104,7 @@ class BaseAgent(ABC):
 
     def run(self, input_msg: str):
         self.logger.debug(msg=f"System prompt: {self.get_system_prompt()}")
-        self.logger.info(msg=f"User input: {input_msg}")
+        self.logger.info(msg=f"User prompt: {input_msg}")
         self.token_warning_sent = False
 
         # Get historical summaries for the target agent

@@ -832,8 +832,6 @@ class ACI:
             # Replace the output with a default message if it's empty
             if not output and exit_code == "0":
                 output = ""
-            # logger.info(f"Command\nCommand:\n{command}\nOutput:\n{output}")
-            # logger.info(f"State\nopen_file: {self.open_file}\nworking_dir: {self.working_dir}")
 
             # Extract the latest lines of output to avoid too long output
             output = self.truncate_and_clean_output(output, max_output_lines)

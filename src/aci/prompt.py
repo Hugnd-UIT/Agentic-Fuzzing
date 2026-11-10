@@ -14,9 +14,9 @@ Your response must follow the following format:
 
 
 TOOL_CALL_RESPONSE_PROMPT = """
-<TOOL_CALL>
+<ACTION>
 system$ {COMMAND}
-</TOOL_CALL>
+</ACTION>
 
 <OBSERVATION> 
 {OBSERVATION}
@@ -27,7 +27,7 @@ system$ {COMMAND}
 (SRC: {SRC})
 (OUTPUT: {OUTPUT})
 
-**ACTION PLANNING**: Based on the current observation from the previous action, provide reasoning and select the appropriate next action to continue your task.
+**THOUGHT**: Based on the current observation from the previous action, provide reasoning and select the appropriate next action to continue your task.
 """
 
 

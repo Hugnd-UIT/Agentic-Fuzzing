@@ -152,8 +152,8 @@ def query_llm(
 
     # Log the parsed thinking, result, function call and arguments
     if think:
-        logger.debug(f"LLM Thinking:\n {think}")  # For thinking models
-    logger.debug(f"LLM Answer:\n{result}")
+        logger.debug(f"Thinking:\n {think}")  # For thinking models
+    logger.debug(f"Answer:\n{result}")
 
     return result, tool_call, out_messages
 
@@ -179,7 +179,7 @@ def record_token_usage(response: openai.ChatCompletion, logger: Logger, check_wa
                 cached_token = prompt_tokens_details.cached_tokens or 0
 
             logger.info(
-                f"Response Tokens\nCompletion Tokens:{current_completion_tokens}\nPrompt Tokens:{current_prompt_tokens}\nTotal Tokens:{current_total_tokens}\nCached Tokens:{cached_token}"
+                f"Tokens\nTokens output:{current_completion_tokens}\nTokens input:{current_prompt_tokens}\nTokens total:{current_total_tokens}\nTokens cached:{cached_token}\n"
             )
 
             # Update global token statistics

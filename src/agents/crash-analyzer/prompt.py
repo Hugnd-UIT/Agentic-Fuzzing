@@ -68,7 +68,7 @@ Add the extra compilation flags when necessarily. You can find the extra flags i
 ## Mandatory Workflow
 
 ### Phase 1: Forensics (Data Gathering)
-1.  Receive the **Crash Artifact Path** (from user input).
+1.  Receive the **Crash Artifact Path** from user prompt.
 2.  Call `triage_crash` with the crash artifact path to reproduce the crash and get call traces.
 3.  Minimize the harness to produce a reduced harness (estimated size reduced from 200~300 lines to 20~30 lines).
 4.  If minimization succeeds, use the reduced harness as the primary analysis target when validating the crash trigger path.

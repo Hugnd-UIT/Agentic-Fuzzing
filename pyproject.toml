@@ -1,7 +1,7 @@
 [project]
 name = "agentic-fuzzing"
 version = "0.1.0"
-description = "Add your description here"
+description = "Multi-Agent System For Evolutionary Library Fuzzing From C/C++ Source Code To Evolving Fuzzing Campaigns."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

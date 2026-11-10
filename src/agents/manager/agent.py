@@ -111,7 +111,7 @@ class ManagerAgent(BaseAgent):
         if not agent:
             raise ValueError("The agent name: {} is not valid. The available agents are {}".format(agent_name, self.list_agent_names()))
         
-        self.logger.info(msg=f"Sending Agent task: {agent_name}\nTask description: {task_description}")
+        self.logger.info(msg=f"Sending agent task: {agent_name}\nTask description: {task_description}")
         observation = agent.run(task_description)
         command = "check_status"
         new_observation = self.aci.run_command_with_timeout(command, timeout=120, max_output_lines=200)

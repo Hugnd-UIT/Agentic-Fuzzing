@@ -4,7 +4,7 @@
 #include <string>
 #include <cstdint>
 
-// declare the external fuzzing entry function
+// Declare the external fuzzing entry function
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 
 int main(int argc, char *argv[]) {
@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
 
     std::string filename = argv[1];
 
-    // 1. open the file in binary mode, and move the file pointer to the end
+    // 1. Open the file in binary mode, and move the file pointer to the end
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
 
     if (!file.is_open()) {
@@ -23,17 +23,17 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // 2. get the file size and allocate memory
+    // 2. Get the file size and allocate memory
     std::streamsize size = file.tellg();
     file.seekg(0, std::ios::beg);
 
     std::vector<uint8_t> buffer(size);
 
-    // 3. read the file content into the buffer
+    // 3. Read the file content into the buffer
     if (file.read(reinterpret_cast<char*>(buffer.data()), size)) {
         std::cout << "Read file successfully (" << size << " bytes). Start calling Harness..." << std::endl;
 
-        // 4. call the fuzzing entry
+        // 4. Call the fuzzing entry
         LLVMFuzzerTestOneInput(buffer.data(), static_cast<size_t>(size));
 
         std::cout << "Execution completed." << std::endl;

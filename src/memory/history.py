@@ -87,14 +87,14 @@ class History:
 
     def extend_user_msg(self, content: str):
         """
-        Extends the history message to get a new messeage for query with user message.
+        Extends the history message to get a new messeage for query with user prompt.
         """
         new_msg = [
             {"role": "user", "content": content},
         ]
         self.messages.extend(new_msg)
         self.original_messages.extend(new_msg)
-        self.logger.info(f"User message\n{content}")
+        self.logger.info(f"User prompt\n{content}")
 
     def extend_assistant_msg(self, content: str):
         """
@@ -129,7 +129,7 @@ class History:
 
         self.messages.extend(new_msg)
         self.original_messages.extend(new_msg)
-        self.logger.info(f"Function call message\n{content}")
+        self.logger.info(f"Acting\n{content}")
 
     def record_history(self, msg: list):
         """
