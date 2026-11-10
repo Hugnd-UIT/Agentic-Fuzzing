@@ -22,6 +22,7 @@
 <p align="center">
   <a href="#quick-start"><strong>Quick Start</strong></a> ·
   <a href="#benchmarks"><strong>Benchmarks</strong></a> ·
+  <a href="#results"><strong>Results</strong></a> ·
   <a href="#license"><strong>License</strong></a>
 </p>
 
@@ -97,6 +98,12 @@ The launcher caches checkouts in `.cache/targets/<target>` and saves results in 
 | [SQLite](https://github.com/sqlite/sqlite) | Embedded SQL database | `sqlite` |
 | [TinyGLTF](https://github.com/syoyo/tinygltf) | glTF model loading and serialization | `tinygltf` |
 | [zlib](https://github.com/madler/zlib) | Data compression | `zlib` |
+
+## Results
+
+| Library | CVE | Target ID |
+| :--- | :--- | :--- |
+| [libxls](https://github.com/libxls/libxls) | | libxls |
 
 ## License
 

@@ -37,6 +37,7 @@ declare -A TARGET_REPOS=(
     [libxls]=https://github.com/libxls/libxls.git
     [djvulibre]=https://git.code.sf.net/p/djvu/djvulibre-git
     [libmspack]=https://github.com/kyz/libmspack.git
+    [libde265]=https://github.com/strukturag/libde265.git
 )
 
 if [[ -t 1 && -z "${NO_COLOR+x}" && "${TERM:-}" != "dumb" ]]; then

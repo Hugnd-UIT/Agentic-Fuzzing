@@ -180,5 +180,4 @@ uv.lock
 #docker/starter/
 Test.py
 controller/run*.sh
-security/
 .agents/
