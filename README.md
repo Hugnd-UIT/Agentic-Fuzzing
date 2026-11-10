@@ -6,10 +6,13 @@
 </p>
 
 <p align="center">
-  <a href="https://arxiv.org/abs/2605.14431"><img src="https://img.shields.io/badge/arXiv-2605.14431-b31b1b?style=flat-square" alt="Paper: arXiv 2605.14431"></a>
   <a href="pyproject.toml"><img src="https://img.shields.io/badge/Python-3.12%2B-3776ab?style=flat-square" alt="Python 3.12 or later"></a>
-  <a href="#quick-start"><img src="https://img.shields.io/badge/Docker-ready-2496ed?style=flat-square" alt="Docker setup"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-AGPL--3.0--only%20%2F%20Commercial-6366f1?style=flat-square" alt="License: AGPL-3.0-only or Commercial"></a>
+  <a href="#quick-start"><img src="https://img.shields.io/badge/Docker-v4.73.1-2496ed?style=flat-square" alt="Docker setup"></a>
+  <a href="#benchmarks"><img src="https://img.shields.io/badge/Fuzzing-AFL%2B%2B%20%7C%20LibFuzzer-ef4444?style=flat-square" alt="Fuzzing: AFL++ and LibFuzzer"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Sanitizers-ASan%20%7C%20UBSan-f97316?style=flat-square" alt="Sanitizers: ASan and UBSan"></a>
+  <a href="#"><img src="https://img.shields.io/badge/LLM-Multi--Agent-8b5cf6?style=flat-square" alt="LLM: Multi-Agent"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Security-Bug%20hunter-10b981?style=flat-square" alt="Security: Bug hunter"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-AGPL--3.0-6366f1?style=flat-square" alt="License: AGPL-3.0"></a>
 </p>
 
 <p align="center">
@@ -17,42 +20,24 @@
 </p>
 
 <p align="center">
-  <a href="https://arxiv.org/abs/2605.14431"><strong>Paper</strong></a> ·
   <a href="#quick-start"><strong>Quick Start</strong></a> ·
-  <a href="#results"><strong>Results</strong></a> ·
   <a href="#benchmarks"><strong>Benchmarks</strong></a> ·
-  <a href="#citation"><strong>Citation</strong></a>
+  <a href="#license"><strong>License</strong></a>
 </p>
 
 ---
 
-Agentic Fuzzing is an autonomous multi-agent system for fuzzing C/C++ libraries. Starting from source code, specialized agents collaborate to prepare builds, generate harnesses and inputs, run fuzzers, and analyze coverage and crashes. This repository provides the research prototype and launchers for the 20 libraries evaluated in the paper.
-
-- **End-to-end automation:** Coordinate library building, dictionary and seed acquisition, harness generation, fuzzing, and analysis.
-- **Dependency-aware harness generation:** Construct API sequences around initialization, state dependencies, and object lifetimes.
-- **Coverage-guided evolution:** Use execution feedback to refine harnesses and explore additional program paths.
+Agentic Fuzzing is an autonomous multi-agent system for fuzzing C/C++ libraries. Starting from source code, specialized agents collaborate to prepare builds, generate harnesses and inputs, run fuzzers, and analyze coverage and crashes.
 
 <p align="center">
   <img src="docs/assets/overview.png" alt="Agentic Fuzzing architecture" width="1000">
 </p>
 
-## Results
-
-The paper's [Table 1](https://arxiv.org/html/2605.14431v1) reports per-library statistics, branch coverage, LLM cost, and detected bugs across all 20 targets. The screenshot below preserves the full table; click it to open the original-size image.
-
-<p align="center">
-  <a href="docs/assets/paper-overall-results.png">
-    <img src="docs/assets/paper-overall-results.png" alt="Paper Table 1: library statistics, branch coverage, LLM cost, and detected bugs across 20 libraries" width="100%">
-  </a>
-</p>
-
-Agentic Fuzzing covers **184,840 branches** and reports **102 detected bugs**. By reported total branch coverage, this is **49.3%** more than OSS-Fuzz, **199.7%** more than OSS-Fuzz-Gen, **78.3%** more than PromptFuzz, and **97.7%** more than PromeFuzz; the systems cover different target sets. Its end-to-end variant covers **179,619 branches** using 24 hours of execution without an additional 24-hour standalone fuzzing phase. The other coverage results follow the paper's 24-hour execution plus 24-hour standalone fuzzing protocol. The paper explains the unsupported entries and per-system evaluation details in the table notes.
-
 ## Quick Start
 
 Tested on **Ubuntu 24.04 LTS**, using docker and an OpenAI-compatible LLM endpoint. Run the following commands from the repository root.
 
-### 1. Build the docker image
+### 1. Build your docker
 
 Install docker engine and the docker compose plugin using the [official guide](https://docs.docker.com/engine/install/ubuntu/), then build the image:
 
@@ -76,7 +61,7 @@ OPENAI_MODEL=your-model
 
 A GitHub token is optional. Create one at [github.com/settings/tokens](https://github.com/settings/tokens) and set `GITHUB_TOKEN` in `.env` to enable GitHub search.
 
-### 3. Launch a benchmark
+### 3. Launch your fuzzing
 
 ```bash
 ./benchmark/run.sh cjson
@@ -117,27 +102,6 @@ The launcher caches checkouts in `.cache/targets/<target>` and saves results in 
 
 Agentic Fuzzing is dual-licensed under **[AGPL-3.0-only](LICENSE)** or a separate **commercial license** obtained from the copyright holders. You can choose either option:
 
-1. **Open-source license (AGPL-3.0-only)**. Use, modify, and share HarnessMinimizer under the AGPL's terms. If you distribute covered binaries, provide the corresponding source as required by the license. If you run a modified version as a network service, offer its corresponding source to users who interact with it remotely. Full terms: [LICENSE](LICENSE).
+1. **Open-source license (AGPL-3.0-only)**. Use, modify, and share Agentic Fuzzing under the AGPL's terms. If you distribute covered binaries, provide the corresponding source as required by the license. If you run a modified version as a network service, offer its corresponding source to users who interact with it remotely. Full terms: [LICENSE](LICENSE).
 
-2. **Commercial license**. If you cannot or do not want to meet the AGPL requirements for your intended use, obtain a separately negotiated commercial license before proceeding. Contact fuzzanything@gmail.com. This repository does not grant a commercial license.
-
-## Citation
-
-If you use FuzzAgent in your research, please cite our [paper](https://arxiv.org/abs/2605.14431):
-
-```bibtex
-@misc{lyu2026agentic-fuzzingmultiagentevolutionarylibrary,
-      title={FuzzAgent: Multi-Agent System for Evolutionary Library Fuzzing},
-      author={Yunlong Lyu and Peng Chen and Fengyi Wu and Junzhe Yu and Kit Long Hon and Hao Chen},
-      year={2026},
-      eprint={2605.14431},
-      archivePrefix={arXiv},
-      primaryClass={cs.SE},
-      url={https://arxiv.org/abs/2605.14431},
-}
-```
-
-## Acknowledgements
-
-This project is built upon the foundational research of **FuzzAgent** by Yunlong Lyu, Peng Chen, Fengyi Wu, Junzhe Yu, Kit Long Hon, Hao Chen.
-We express our gratitude to the authors for their open-source contribution under the AGPL-3.0 license.
+2. **Commercial license**. If you cannot or do not want to meet the AGPL requirements for your intended use, obtain a separately negotiated commercial license before proceeding. Contact hungnd.attt2024@gmail.com. This repository does not grant a commercial license.

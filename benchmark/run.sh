@@ -36,6 +36,7 @@ declare -A TARGET_REPOS=(
     [libmobi]=https://github.com/bfabiszewski/libmobi.git
     [libxls]=https://github.com/libxls/libxls.git
     [djvulibre]=https://git.code.sf.net/p/djvu/djvulibre-git
+    [libmspack]=https://github.com/kyz/libmspack.git
 )
 
 if [[ -t 1 && -z "${NO_COLOR+x}" && "${TERM:-}" != "dumb" ]]; then
@@ -118,7 +119,7 @@ if (( ${#missing_config[@]} > 0 )); then
 fi
 
 TARGET_DIR="$ROOT_DIR/.cache/targets/$TARGET"
-mkdir -p "$(dirname "$TARGET_DIR")" "$ROOT_DIR/output"
+mkdir -p "$(dirname "$TARGET_DIR")" "$ROOT_DIR/output" 2>/dev/null || true
 if [[ -d "$TARGET_DIR/.git" ]]; then
     if ! git -C "$TARGET_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         printf 'The cached checkout for %s is incomplete: %s\nRemove that directory and rerun this command.\n' \
