@@ -5,7 +5,7 @@ services:
     init: true
     stdin_open: true
     tty: true
-    command: /bin/bash -c "${COMMAND}"
+    command: ["/bin/bash", "-c", "${COMMAND}"]
     volumes:
       - ${AGENTIC_FUZZING_DIR}:/root/agentic-fuzzing:${WRITE_MODE}
       - ${RAW_OUTPUT_DIR}:/root/agentic-fuzzing/output/${REPO_BASE_NAME}
