@@ -92,11 +92,6 @@ def handle_fuzzer_coverage_overview(fuzzer_id: int, replay_mode: bool = False):
     print(merged_project_stats.summary())
 
 def handle_whole_project_coverage_overview(replay_mode: bool = False):
-    import json as _json
-    import time as _time
-    from datetime import datetime, timezone
-
-    started = _time.time()
     print_debug("[+] Showing whole project coverage overview...")
     CoverageUtils.gather_whole_project_coverage_pipeline(replay_mode=replay_mode)
     coverage_dir = ProjectUtils.get_project_coverage_dir()
@@ -104,30 +99,6 @@ def handle_whole_project_coverage_overview(replay_mode: bool = False):
     llvm_cov = LLVM_COV_DATA(llvm_cov_json_file)
     merged_project_stats = MergedProjectStats(ProjectUtils.list_all_harnesses(), llvm_cov)
     print(merged_project_stats.summary())
-
-    # Write run marker so downstream consumers (review) can verify
-    # THIS invocation actually produced fresh data. Best-effort: marker
-    # failure does not fail the whole run. Write both last_run.json and last-run.json for compatibility.
-    marker_path = os.path.join(coverage_dir, "last_run.json")
-    marker_path_hyphen = os.path.join(coverage_dir, "last-run.json")
-    try:
-        llvm_cov_size = os.path.getsize(llvm_cov_json_file) if os.path.exists(llvm_cov_json_file) else 0
-        fuzzer_ids = CoverageUtils.get_available_fuzzers()
-        marker = {
-            "mode": "replay" if replay_mode else "normal",
-            "completed_at": datetime.now(timezone.utc).isoformat(),
-            "duration_seconds": _time.time() - started,
-            "fuzzer_count": len(fuzzer_ids),
-            "llvm_cov_json_path": llvm_cov_json_file,
-            "llvm_cov_json_size": llvm_cov_size,
-        }
-        with open(marker_path, "w") as fh:
-            _json.dump(marker, fh, indent=2)
-        with open(marker_path_hyphen, "w") as fh:
-            _json.dump(marker, fh, indent=2)
-        print_debug(f"[+] Wrote run marker to {marker_path} and {marker_path_hyphen}: {marker}")
-    except Exception as exc:
-        print(f"[!] WARNING: Failed to write run marker: {exc}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Show whole project coverage overview")

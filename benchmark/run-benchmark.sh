@@ -13,5 +13,9 @@ if [[ "$FUZZ_EXIT_CODE" -ne 0 && "$FUZZ_EXIT_CODE" -ne 124 ]]; then
 fi
 
 echo "Benchmark complete. Exporting full code coverage."
+if [[ -z "${OUTPUT:-}" || ! -d "$OUTPUT/build/coverage/include" || ! -f "$OUTPUT/.cache/fuzzer_stat.json" ]]; then
+    echo "No completed coverage build or fuzzer stats found; skipping final coverage export."
+    exit 0
+fi
 bash /root/agentic-fuzzing/src/tools/copy-tools.sh
-exec uv run python -m src.review.main
+exec uv run python /usr/local/bin/cov_overview --replay
