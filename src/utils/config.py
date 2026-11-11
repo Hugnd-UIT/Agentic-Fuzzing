@@ -15,7 +15,7 @@ _script_path = os.path.realpath(__file__)
 _script_dir = os.path.dirname(_script_path)
 
 def _optional_llm_timeout() -> int | None:
-    raw = os.environ.get("LLM_REPLY_TIMEOUT", "600").strip().lower()
+    raw = os.environ.get("LLM_TIMEOUT", "600").strip().lower()
     return None if raw in {"none", "unlimited"} else int(raw)
 
 def _normalize_llm_base(url: str) -> str:
@@ -39,9 +39,9 @@ class ACIVariables(BaseModel):
 class LLMArgs(BaseModel):
     OPENAI_API_BASE: str = _normalize_llm_base(os.environ["OPENAI_BASE_URL"])
     OPENAI_MODEL: str = os.environ["OPENAI_MODEL"]
-    LLM_REPLY_TIMEOUT: int | None = _optional_llm_timeout()
+    LLM_TIMEOUT: int | None = _optional_llm_timeout()
     LLM_TEMPERATURE: float = float(os.environ.get("LLM_TEMPERATURE", 0.6))
-    MAX_AGENT_EPOCHS: int = int(os.environ.get("MAX_AGENT_EPOCHS", 100))
+    MAX_EPOCH: int = int(os.environ.get("MAX_EPOCH", 100))
     LLM_TOP_P: float = float(os.environ.get("LLM_TOP_P", 0.9))
     LLM_TOP_K: int = int(os.environ.get("LLM_TOP_K", 20))
     REMINDER_TOKEN_RATIO: float = float(os.environ.get("REMINDER_TOKEN_RATIO", 0.8))

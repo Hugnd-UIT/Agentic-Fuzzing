@@ -63,9 +63,9 @@ print_usage() {
     cat <<'EOF'
 
 Start one of the 20 paper benchmark targets in a detached Docker container.
-The default fuzzing duration is 24h; override it with FUZZING_DURATION, e.g.:
+The default fuzzing duration is 24h; override it with FUZZ_DURATION, e.g.:
 EOF
-    printf '  %s\n\nAvailable targets:\n' "$(color_command "FUZZING_DURATION=10m $0 cjson")"
+    printf '  %s\n\nAvailable targets:\n' "$(color_command "FUZZ_DURATION=10m $0 cjson")"
     printf '  %s\n' "${!TARGET_REPOS[@]}" | sort
 }
 
@@ -153,12 +153,12 @@ else
 fi
 
 export CONTAINER_NAME="agentic-fuzzing-$TARGET"
-export FUZZING_DURATION="${FUZZING_DURATION:-24h}"
+export FUZZ_DURATION="${FUZZ_DURATION:-24h}"
 
 IFS= read -r -d '' COMMAND <<'EOF' || true
 set -uo pipefail
 
-BENCHMARK_DURATION="${FUZZING_DURATION:-24h}"
+BENCHMARK_DURATION="${FUZZ_DURATION:-24h}"
 echo "Starting agentic fuzzing benchmark for $BENCHMARK_DURATION."
 git config --global --add safe.directory '*' || true
 timeout --signal=INT --kill-after=60s "$BENCHMARK_DURATION" uv run main.py
@@ -180,18 +180,18 @@ exec uv run python /usr/local/bin/cov_overview --replay
 EOF
 export COMMAND
 export WRITE_MODE=rw
-export FUZZING_ENGINE=afl++
-export AGENTIC_FUZZING_AUTO_CLEAN="${AGENTIC_FUZZING_AUTO_CLEAN:-1}"
-export AGENTIC_FUZZING_DIR="$ROOT_DIR"
+export FUZZ_ENGINE=afl++
+export AUTO_CLEAN="${AUTO_CLEAN:-1}"
+export ROOT_DIR="$ROOT_DIR"
 export SRC_DIR="$TARGET_DIR"
-export REPO_BASE_NAME="$TARGET"
-export RAW_OUTPUT_DIR="$ROOT_DIR/output/$TARGET"
+export REPO_NAME="$TARGET"
+export OUTPUT_DIR="$ROOT_DIR/output/$TARGET"
 
 printf '\nStarting agentic fuzzing benchmark\n'
 printf '  Target:   %s\n' "$TARGET"
-printf '  Duration: %s\n' "$FUZZING_DURATION"
+printf '  Duration: %s\n' "$FUZZ_DURATION"
 printf '  Source:   %s\n' "$(color_path "$TARGET_DIR")"
-printf '  Results:  %s\n' "$(color_path "$RAW_OUTPUT_DIR")"
+printf '  Results:  %s\n' "$(color_path "$OUTPUT_DIR")"
 printf '  Container: %s\n\n' "$CONTAINER_NAME"
 
 if ! docker compose -p "$CONTAINER_NAME" -f "$ROOT_DIR/docker/docker-compose.yml" up -d; then
@@ -211,7 +211,7 @@ cat <<EOF
 
 Agentic fuzzing is running in the background. This command can now be closed safely.
 
-Execution logs are continuously saved to: $(color_path "$RAW_OUTPUT_DIR/.cache/logs")
+Execution logs are continuously saved to: $(color_path "$OUTPUT_DIR/.cache/logs")
 
 Stop the benchmark early:
   $(color_command "docker rm -f $CONTAINER_NAME")

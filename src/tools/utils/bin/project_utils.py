@@ -42,7 +42,7 @@ class FuzzingEngine(Enum):
     LibFuzzer = "libfuzzer"
 
 def get_fuzzing_engine() -> FuzzingEngine:
-    fuzzing_engine = os.getenv("FUZZING_ENGINE", "libfuzzer").lower()
+    fuzzing_engine = os.getenv("FUZZ_ENGINE", "libfuzzer").lower()
     if fuzzing_engine == "afl++":
         return FuzzingEngine.AFLpp
     elif fuzzing_engine == "libfuzzer":

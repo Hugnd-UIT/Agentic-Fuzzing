@@ -67,8 +67,8 @@ class Summarize:
             base_url=CONFIG.LLMARGs["OPENAI_API_BASE"],
             timeout=(
                 httpx.Timeout(None)
-                if CONFIG.LLMARGs["LLM_REPLY_TIMEOUT"] is None
-                else CONFIG.LLMARGs["LLM_REPLY_TIMEOUT"]
+                if CONFIG.LLMARGs["LLM_TIMEOUT"] is None
+                else CONFIG.LLMARGs["LLM_TIMEOUT"]
             ),
         )
         self.logger = get_logger("Summarize")

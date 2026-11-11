@@ -71,7 +71,7 @@ def query_llm(
                     messages=messages,
                     temperature=CONFIG.LLMARGs["LLM_TEMPERATURE"],
                     top_p=CONFIG.LLMARGs["LLM_TOP_P"],
-                    timeout=CONFIG.LLMARGs["LLM_REPLY_TIMEOUT"],
+                    timeout=CONFIG.LLMARGs["LLM_TIMEOUT"],
                     tools=tools,
                     tool_choice=tool_choice, # Experimental: "auto" | "required" | "none"
                     extra_body={

@@ -49,7 +49,7 @@ else:
     PROJECT_VMS = VMS(_project_output_dir) if os.path.exists(_project_output_dir) else None
 
 def is_autoclean_enabled():
-    if os.environ.get("AGENTIC_FUZZING_AUTO_CLEAN", "0") == "1":
+    if os.environ.get("AUTO_CLEAN", "0") == "1":
         return True
     return False
 

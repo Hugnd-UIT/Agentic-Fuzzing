@@ -36,7 +36,7 @@ class ManagerAgent(BaseAgent):
         ]
     )
     MAX_TOOL_CALL_TIMES = 10
-    MAX_AGENT_EPOCHS = 100
+    MAX_EPOCH = 100
 
     def __init__(self, agent_addresses: List[str]):
         super().__init__()
