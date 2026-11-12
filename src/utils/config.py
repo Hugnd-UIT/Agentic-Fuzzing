@@ -31,7 +31,6 @@ class ACIVariables(BaseModel):
     CMD_OUTPUT_LINES: int = 100
     MAX_OUTPUT_CHARACTERS: int = 100000 # 10k tokens * 10 characters per token
     WHITELIST_CMD_TIMEOUT: int = 5400
-    DISABLE_COVERAGE_GUIDANCE: int = 0
 
     def __getitem__(self, key):
         return getattr(self, key)

@@ -470,8 +470,6 @@ def check_fuzzer() -> bool:
 
 def check_coverage_guidance() -> bool:
     """Check if the coverage guidance files exist and are valid."""
-    if os.environ.get("DISABLE_COVERAGE_GUIDANCE"):
-        return True
     coverage_guidance_dir = ProjectUtils.get_project_coverage_guidance_dir()
     if not os.path.exists(coverage_guidance_dir):
         task_entry = TaskEntry("Check Coverage Guidance", Status.PENDING, f"The coverage guidance directory is not found: {coverage_guidance_dir}. Please generate the coverage guidance files and try again.")

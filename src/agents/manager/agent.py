@@ -6,7 +6,7 @@ from src.a2a.types import (
 from src.agents.agent import BaseAgent
 from src.aci.factory import ACI
 from src.utils.log import get_logger
-from .prompt import NO_COVERAGE_GUIDANCE_SYSTEM_PROMPT, SYSTEM_PROMPT
+from .prompt import SYSTEM_PROMPT
 from typing import override
 from typing import List
 import logging
@@ -64,9 +64,6 @@ class ManagerAgent(BaseAgent):
             "Seed Generator Agent": seed_gen,
             "Coverage Analyzer Agent": cov_analyzer,
         }
-        if CONFIG.ACIARGs.DISABLE_COVERAGE_GUIDANCE:
-            self.class_map.pop("Coverage Analyzer Agent", None)
-            self.agents = [agent for agent in self.agents if self._normalize_name(agent.name) != "coverageanalyzeragent"]
             
         self.prompt_factory = ACI(
              agents=self.agents,
@@ -91,10 +88,7 @@ class ManagerAgent(BaseAgent):
 
     @override
     def format_system_prompt(self) -> str:
-        if CONFIG.ACIARGs.DISABLE_COVERAGE_GUIDANCE:
-            return NO_COVERAGE_GUIDANCE_SYSTEM_PROMPT + self.prompt_factory.create_available_agents_prompt()
-        else:
-            return SYSTEM_PROMPT + self.prompt_factory.create_available_agents_prompt()
+        return SYSTEM_PROMPT + self.prompt_factory.create_available_agents_prompt()
 
     @override
     def register_agent_pre_call(self):
