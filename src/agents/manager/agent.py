@@ -38,30 +38,43 @@ class ManagerAgent(BaseAgent):
     MAX_TOOL_CALL_TIMES = 10
     MAX_EPOCH = 100
 
+    @staticmethod
+    def _normalize_name(name: str) -> str:
+        return name.lower().replace(" ", "").replace("_", "").replace("-", "")
+
     def __init__(self, agent_addresses: List[str]):
         super().__init__()
         self.logger.log(level=logging.INFO, msg="Manager Agent Initialized.")
         self.cards: dict[str, AgentCard] = self.resolve_agent_cards(agent_addresses)
         self.agents = self.list_agents()
+        builder = BuilderAgent()
+        harness = HarnessAgent()
+        fuzzer = FuzzerAgent()
+        crash_analyzer = CrashAnalyzerAgent()
+        dict_gen = DictionaryGeneratorAgent()
+        seed_gen = SeedGeneratorAgent()
+        cov_analyzer = CoverageAnalyzerAgent()
+
         self.class_map = {
-            "BuilderAgent": BuilderAgent(),
-            "HarnessAgent": HarnessAgent(),
-            "FuzzerAgent": FuzzerAgent(),
-            "CrashAnalyzerAgent": CrashAnalyzerAgent(),
-            "DictionaryGeneratorAgent": DictionaryGeneratorAgent(),
-            "SeedGeneratorAgent": SeedGeneratorAgent(),
-            "CoverageAnalyzerAgent": CoverageAnalyzerAgent(),
+            "BuilderAgent": builder,
+            "Builder Agent": builder,
+            "HarnessAgent": harness,
+            "Harness Agent": harness,
+            "FuzzerAgent": fuzzer,
+            "Fuzzer Agent": fuzzer,
+            "CrashAnalyzerAgent": crash_analyzer,
+            "Crash Analyzer Agent": crash_analyzer,
+            "DictionaryGeneratorAgent": dict_gen,
+            "Dictionary Generator Agent": dict_gen,
+            "SeedGeneratorAgent": seed_gen,
+            "Seed Generator Agent": seed_gen,
+            "CoverageAnalyzerAgent": cov_analyzer,
+            "Coverage Analyzer Agent": cov_analyzer,
         }
         if CONFIG.ACIARGs.DISABLE_COVERAGE_GUIDANCE:
-            self.class_map = {
-                "BuilderAgent": BuilderAgent(),
-                "HarnessAgent": HarnessAgent(),
-                "FuzzerAgent": FuzzerAgent(),
-                "CrashAnalyzerAgent": CrashAnalyzerAgent(),
-                "DictionaryGeneratorAgent": DictionaryGeneratorAgent(),
-                "SeedGeneratorAgent": SeedGeneratorAgent(),
-            }
-            self.agents = [agent for agent in self.agents if agent.name != "CoverageAnalyzerAgent"]
+            self.class_map.pop("CoverageAnalyzerAgent", None)
+            self.class_map.pop("Coverage Analyzer Agent", None)
+            self.agents = [agent for agent in self.agents if self._normalize_name(agent.name) != "coverageanalyzeragent"]
             
         self.prompt_factory = ACI(
              agents=self.agents,
@@ -108,6 +121,12 @@ class ManagerAgent(BaseAgent):
             raise ValueError("You must specify the task description to send to the agent.")
         
         agent = self.class_map.get(agent_name)
+        if not agent:
+            norm_target = self._normalize_name(agent_name)
+            for k, v in self.class_map.items():
+                if self._normalize_name(k) == norm_target:
+                    agent = v
+                    break
         if not agent:
             raise ValueError("The agent name: {} is not valid. The available agents are {}".format(agent_name, self.list_agent_names()))
         
