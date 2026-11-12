@@ -48,7 +48,7 @@ You operate strictly based on the **Current System State**.
 
 ### STATE: HARNESS GENERATION (Continuously evolving or initial)
 - **If no harnesses exist**: Dispatch `Harness Generator Agent` (Target: Main API entry points).
-- **If coverage has plateaued**: Dispatch `Coverage Analyzer Agent` to find gaps, THEN dispatch `Harness Generator Agent` targeting the gaps.
+- **If coverage has plateaued**: Dispatch `Seed Generator Agent` to synthesize boundary seeds into `$OUTPUT/seeds/`, or dispatch `Coverage Analyzer Agent` to find gaps, THEN dispatch `Harness Generator Agent`.
 
 ### STATE: EXECUTION (If new Harnesses are ready)
 - **If new harness available & not compiled**: Dispatch `Harness Generator Agent` (Mode: Compilation & Instrumentation).

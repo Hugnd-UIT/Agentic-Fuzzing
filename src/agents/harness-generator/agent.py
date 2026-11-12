@@ -23,6 +23,7 @@ class HarnessAgent(BaseAgent):
             "scroll_up",
             "scroll_down",
             "build_harness",
+            "call_chain",
             "search_web",
             "exit",
             "bash"

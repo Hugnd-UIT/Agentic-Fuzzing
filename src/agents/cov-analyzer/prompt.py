@@ -20,6 +20,7 @@ You are not able to observe the raw coverage data directly. Instead you can obse
 4. **API Level**: Code coverage breakdown of each public API by the tool `cov_api`.
 5. **Function Level**: Internal function coverage breakdown by the tool `cov_func`.
 6. **Branch Level**: Code branch blocker coverage analysis by the tool `cov_blockers`.
+7. **Call Graph Level**: Trace reachability from public APIs to target internal functions by the tool `call_chain`.
 
 ## Analysis Strategy
 
@@ -62,7 +63,7 @@ You must follow this logic flow to decide which Phase to execute:
 
 **Workflow:**
 1. **Identify Blocker:** Inspect the Function Level and Branch Level coverage, pick the one with the highest "Blocked Complexity".
-2. **Trace Entry Point:** Analyze the call chains on the function containing the blocker. Identify which Public API reaches this code.
+2. **Trace Entry Point:** Analyze call chains to the function containing the blocker using the call_chain <target_func> tool. Identify which Public API reaches this code.
 3. **Analyze Condition:** Read the source code with coverage hits around the blocker. What condition is failing? Is this caused by unsatisfied API calls? If not, select the next blocker to analyze.
 4. **Formulate Recommendation:** Instruct the Harness Generator Agent to create a specific scenario that satisfies this condition.
 
