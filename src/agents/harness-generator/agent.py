@@ -2,7 +2,7 @@ from src.agents.agent import BaseAgent
 from src.aci.factory import ACI
 from src.utils.llm import ToolCall
 from src.utils.log import get_logger
-from .prompt import SYSTEM_PROMPT, NO_COVERAGE_GUIDANCE_SYSTEM_PROMPT
+from .prompt import SYSTEM_PROMPT
 from typing import override
 from typing import List
 from src.tools.api import API_TOOL_CALLS
@@ -39,10 +39,7 @@ class HarnessAgent(BaseAgent):
 
     @override
     def format_system_prompt(self) -> str:
-        if CONFIG.ACIARGs.DISABLE_COVERAGE_GUIDANCE:
-            return NO_COVERAGE_GUIDANCE_SYSTEM_PROMPT
-        else:
-            return SYSTEM_PROMPT
+        return SYSTEM_PROMPT
 
     @override
     def register_agent_pre_call(self):
