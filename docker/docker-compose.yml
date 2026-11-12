@@ -1,14 +1,14 @@
 services:
-  agentic-fuzzing:
-    image: agentic-fuzzing
+  arasaka:
+    image: arasaka
     container_name: ${CONTAINER_NAME}
     init: true
     stdin_open: true
     tty: true
     command: ["/bin/bash", "-c", "${COMMAND}"]
     volumes:
-      - ${ROOT_DIR}:/root/agentic-fuzzing:${WRITE_MODE}
-      - ${OUTPUT_DIR}:/root/agentic-fuzzing/output/${REPO_NAME}
+      - ${ROOT_DIR}:/root/arasaka:${WRITE_MODE}
+      - ${OUTPUT_DIR}:/root/arasaka/output/${REPO_NAME}
       - ${SRC_DIR}:/src/${REPO_NAME}
 
     security_opt:
@@ -22,7 +22,7 @@ services:
       - AUTO_CLEAN=${AUTO_CLEAN:-0}
 
       - SRC=/src/${REPO_NAME}
-      - OUTPUT=/root/agentic-fuzzing/output/${REPO_NAME}
+      - OUTPUT=/root/arasaka/output/${REPO_NAME}
       
       - AFL_SKIP_CPUFREQ=1
       - AFL_NUM_CORES=${AFL_NUM_CORES:-8}

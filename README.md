@@ -1,7 +1,7 @@
-<h1 align="center">Agentic Fuzzing</h1>
+<h1 align="center">Arasaka</h1>
 
 <p align="center">
-  <strong>Multi-Agent System For Evolutionary Library Fuzzing</strong><br>
+  <strong>Multi-agent system for evolutionary libraries fuzzing</strong><br>
   From C/C++ source code to evolving fuzzing campaigns.
 </p>
 
@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="./docs/assets/banner.gif" alt="Agentic Fuzzing Banner" width="100%">
+  <img src="./docs/assets/banner.gif" alt="Arasaka banner" width="100%">
 </p>
 
 <p align="center">
@@ -28,10 +28,16 @@
 
 ---
 
-Agentic Fuzzing is an autonomous multi-agent system for fuzzing C/C++ libraries. Starting from source code, specialized agents collaborate to prepare builds, generate harnesses and inputs, run fuzzers, and analyze coverage and crashes.
+## Introduction
+
+<p align="left">
+  <img src="docs/assets/avatar.gif" align="left" width="160" style="margin-right: 20px; margin-bottom: 20px; border-radius: 8px;" alt="Arasaka avatar">
+  Arasaka is an autonomous multi-agent system for fuzzing C/C++ libraries. Starting from source code, specialized agents collaborate to prepare builds, generate harnesses and inputs, run fuzzers, and analyze coverage and crashes.
+</p>
+<br clear="left"/>
 
 <p align="center">
-  <img src="docs/assets/overview.png" alt="Agentic Fuzzing architecture" width="1000">
+  <img src="docs/assets/overview.png" alt="Arasaka architecture" width="1000">
 </p>
 
 ## Quick Start
@@ -43,7 +49,7 @@ Tested on **Ubuntu 24.04 LTS**, using docker and an OpenAI-compatible LLM endpoi
 Install docker engine and the docker compose plugin using the [official guide](https://docs.docker.com/engine/install/ubuntu/), then build the image:
 
 ```bash
-docker buildx build -t agentic-fuzzing -f docker/Dockerfile .
+docker buildx build -t arasaka -f docker/Dockerfile .
 ```
 
 ### 2. Configure your LLM
@@ -68,7 +74,7 @@ A GitHub token is optional. Create one at [github.com/settings/tokens](https://g
 ./benchmark/run.sh cjson
 ```
 
-The launcher prepares the source checkout and starts `agentic-fuzzing-cjson` in the background. The default campaign runs for **24 hours**, then exports full code coverage. Source and output paths are configured automatically.
+The launcher prepares the source checkout and starts `arasaka-cjson` in the background. The default campaign runs for **24 hours**, then exports full code coverage. Source and output paths are configured automatically.
 
 ## Benchmarks
 
@@ -107,8 +113,8 @@ The launcher caches checkouts in `.cache/targets/<target>` and saves results in 
 
 ## License
 
-Agentic Fuzzing is dual-licensed under **[AGPL-3.0-only](LICENSE)** or a separate **commercial license** obtained from the copyright holders. You can choose either option:
+Arasaka is dual-licensed under **[AGPL-3.0-only](LICENSE)** or a separate **commercial license** obtained from the copyright holders. You can choose either option:
 
-1. **Open-source license (AGPL-3.0-only)**. Use, modify, and share Agentic Fuzzing under the AGPL's terms. If you distribute covered binaries, provide the corresponding source as required by the license. If you run a modified version as a network service, offer its corresponding source to users who interact with it remotely. Full terms: [LICENSE](LICENSE).
+1. **Open-source license (AGPL-3.0-only)**. Use, modify, and share Arasaka under the AGPL's terms. If you distribute covered binaries, provide the corresponding source as required by the license. If you run a modified version as a network service, offer its corresponding source to users who interact with it remotely. Full terms: [LICENSE](LICENSE).
 
 2. **Commercial license**. If you cannot or do not want to meet the AGPL requirements for your intended use, obtain a separately negotiated commercial license before proceeding. Contact hungnd.attt2024@gmail.com. This repository does not grant a commercial license.

@@ -130,6 +130,6 @@ ENV PATH=$PATH:$GOPATH/bin
 RUN go install github.com/boyter/scc/v3@latest
 
 # We Must mapping our source code to this path in the container (DEV Phase)
-WORKDIR /root/agentic-fuzzing
+WORKDIR /root/arasaka
 
 # ENTRYPOINT ["python", "main.py"]

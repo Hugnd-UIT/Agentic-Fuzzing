@@ -3,8 +3,8 @@
   "description": "Act as an expert fuzzing test engineer specializing in generating effective fuzzing harnesses, and fixing harness errors. It generates single fuzzing harness per iteration and can accept user guidance to generate high-quality fuzzing harnesses. You can provide your specific targets for generating fuzzing harnesses or specific harness error messages to fix them.",
   "url": "https://localhost",
   "provider": {
-    "organization": "Agentic Fuzzing",
-    "url": "https://agenticfuzzing.com"
+    "organization": "Arasaka",
+    "url": "https://arasaka.com"
   },
   "version": "1.0.0",
   "authentication": {

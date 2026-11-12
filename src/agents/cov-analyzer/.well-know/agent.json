@@ -3,8 +3,8 @@
   "description": "Advanced coverage analysis specialist that performs comprehensive multi-layered coverage diagnosis across overview, module, file, API, function, and branch levels. Analyzes coverage gaps, identifies bottlenecks, and provides actionable recommendations for improving fuzzing effectiveness on the tasks of harness generation and seed generation.",
   "url": "https://localhost",
   "provider": {
-    "organization": "Agentic Fuzzing",
-    "url": "https://agenticfuzzing.com"
+    "organization": "Arasaka",
+    "url": "https://arasaka.com"
   },
   "version": "1.0.0",
   "authentication": {

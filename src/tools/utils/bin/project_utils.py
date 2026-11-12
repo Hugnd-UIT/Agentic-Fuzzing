@@ -8,7 +8,7 @@ import time
 from dotenv import load_dotenv
 import pydantic
 
-WORKDIR=os.environ.get("WORKDIR", "/root/agentic-fuzzing")
+WORKDIR=os.environ.get("WORKDIR", "/root/arasaka")
 if WORKDIR:
     load_dotenv(os.path.join(WORKDIR, ".env")) # Load environment variables before importing other modules
 

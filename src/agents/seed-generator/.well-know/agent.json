@@ -3,8 +3,8 @@
   "description": "Expert agent for intelligent fuzzing seed acquisition: locate, download, and install high-quality fuzzing seed corpora for the target project",
   "url": "https://localhost",
   "provider": {
-    "organization": "Agentic Fuzzing",
-    "url": "https://agenticfuzzing.com"
+    "organization": "Arasaka",
+    "url": "https://arasaka.com"
   },
   "version": "1.0.0",
   "authentication": {

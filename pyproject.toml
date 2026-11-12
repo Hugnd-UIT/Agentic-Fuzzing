@@ -1,5 +1,5 @@
 [project]
-name = "agentic-fuzzing"
+name = "arasaka"
 version = "0.1.0"
 description = "Multi-Agent System For Evolutionary Library Fuzzing From C/C++ Source Code To Evolving Fuzzing Campaigns."
 readme = "README.md"

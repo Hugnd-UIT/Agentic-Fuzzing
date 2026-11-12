@@ -28,7 +28,7 @@ declare -A TARGET_REPOS=(
     [protobuf]=https://github.com/protocolbuffers/protobuf.git
     [opencv]=https://github.com/opencv/opencv.git
 
-    # Agentic fuzzing
+    # Arasaka
     [libucl]=https://github.com/vstakhov/libucl.git
     [libmobi]=https://github.com/bfabiszewski/libmobi.git
     [libxls]=https://github.com/libxls/libxls.git
@@ -36,6 +36,8 @@ declare -A TARGET_REPOS=(
     [libmspack]=https://github.com/kyz/libmspack.git
     [libde265]=https://github.com/strukturag/libde265.git
     [libsixel]=https://github.com/saitoha/libsixel.git
+    [libssh]=https://git.libssh.org/projects/libssh.git
+    [libuv]=https://github.com/libuv/libuv.git
 )
 
 if [[ -t 1 && -z "${NO_COLOR+x}" && "${TERM:-}" != "dumb" ]]; then
@@ -89,8 +91,8 @@ if ! docker compose version >/dev/null 2>&1; then
     printf 'Docker compose v2 is required. Install the docker compose plugin, then retry.\n' >&2
     exit 1
 fi
-if ! docker image inspect agentic-fuzzing >/dev/null 2>&1; then
-    printf 'The local agentic-fuzzing image was not found. Build it first with:\n  %sdocker buildx build -t agentic-fuzzing -f %s%s %s\n' \
+if ! docker image inspect arasaka >/dev/null 2>&1; then
+    printf 'The local arasaka image was not found. Build it first with:\n  %sdocker buildx build -t arasaka -f %s%s %s\n' \
         "$RED" "$(color_path "$ROOT_DIR/docker/Dockerfile")" "$RED" "$(color_path "$ROOT_DIR")" >&2
     exit 1
 fi
@@ -150,20 +152,20 @@ else
     printf 'Source checkout ready: %s\n' "$(color_path "$TARGET_DIR")"
 fi
 
-export CONTAINER_NAME="agentic-fuzzing-$TARGET"
+export CONTAINER_NAME="arasaka-$TARGET"
 export FUZZ_DURATION="${FUZZ_DURATION:-24h}"
 
 IFS= read -r -d '' COMMAND <<'EOF' || true
 set -uo pipefail
 
 BENCHMARK_DURATION="${FUZZ_DURATION:-24h}"
-echo "Starting agentic fuzzing benchmark for $BENCHMARK_DURATION."
+echo "Starting arasaka benchmark for $BENCHMARK_DURATION."
 git config --global --add safe.directory '*' || true
 timeout --signal=INT --kill-after=60s "$BENCHMARK_DURATION" uv run main.py
 FUZZ_EXIT_CODE=$?
 
 if [[ "$FUZZ_EXIT_CODE" -ne 0 && "$FUZZ_EXIT_CODE" -ne 124 ]]; then
-    echo "Agentic fuzzing exited with status $FUZZ_EXIT_CODE; skipping final coverage export." >&2
+    echo "Arasaka exited with status $FUZZ_EXIT_CODE; skipping final coverage export." >&2
     exit "$FUZZ_EXIT_CODE"
 fi
 
@@ -172,7 +174,7 @@ if [[ -z "${OUTPUT:-}" || ! -d "$OUTPUT/build/coverage/include" || ! -f "$OUTPUT
     echo "No completed coverage build or fuzzer stats found; skipping final coverage export."
     exit 0
 fi
-bash /root/agentic-fuzzing/src/tools/copy-tools.sh
+bash /root/arasaka/src/tools/copy-tools.sh
 exec uv run python /usr/local/bin/cov_overview --replay
 
 EOF
@@ -185,7 +187,7 @@ export SRC_DIR="$TARGET_DIR"
 export REPO_NAME="$TARGET"
 export OUTPUT_DIR="$ROOT_DIR/output/$TARGET"
 
-printf '\nStarting agentic fuzzing benchmark\n'
+printf '\nStarting arasaka benchmark\n'
 printf '  Target:   %s\n' "$TARGET"
 printf '  Duration: %s\n' "$FUZZ_DURATION"
 printf '  Source:   %s\n' "$(color_path "$TARGET_DIR")"
@@ -207,7 +209,7 @@ fi
 
 cat <<EOF
 
-Agentic fuzzing is running in the background. This command can now be closed safely.
+Arasaka is running in the background. This command can now be closed safely.
 
 Execution logs are continuously saved to: $(color_path "$OUTPUT_DIR/.cache/logs")
 
