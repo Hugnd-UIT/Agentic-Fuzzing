@@ -1,5 +1,5 @@
 {
-  "name": "BuilderAgent",
+  "name": "Builder Agent",
   "description": "Act as a professional autonomous software engineer focused on automatically building the target library and generating the corresponding building artifacts. It can automatically analyze the library source and choose the best way to build. It would produce a functional `build.sh` script for the specified library and run the build script to generate various kinds of building artifacts for fuzzing. Note that this agent only build the target library and does not handle compiling the harness into a fuzzer.",
   "url": "https://localhost",
   "provider": {
@@ -34,7 +34,7 @@
       ],
       "examples": [
         "Analyze the project structure in the given directory and identify the main build components.",
-        "Determine the build system (e.g., Makefile, CMake, Autotools) used in this project."
+        "Determine the build system like Makefile, CMake, Autotools, etc. used in this project."
       ]
     },
     {
@@ -68,7 +68,7 @@
     {
       "id": "dependency_management",
       "name": "Dependency Management",
-      "description": "Resolves and integrates external dependencies (libraries, headers) required for successful project builds.",
+      "description": "Resolves and integrates external dependencies like libraries, headers required for successful project builds.",
       "tags": [
         "dependency resolution",
         "package management",

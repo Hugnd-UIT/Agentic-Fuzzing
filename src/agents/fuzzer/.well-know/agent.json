@@ -1,6 +1,6 @@
 {
-  "name": "FuzzerAgent",
-  "description": "An expert fuzzing test automation system with comprehensive capabilities for executing, monitoring, and optimizing fuzzing campaigns. The agent specializes in dynamic program analysis, fault detection, and fuzzing process optimization across various fuzzer types (coverage-guided, grammar-based, mutational, etc.).",
+  "name": "Fuzzer Agent",
+  "description": "An expert fuzzing test automation system with comprehensive capabilities for executing, monitoring, and optimizing fuzzing campaigns. The agent specializes in dynamic program analysis, fault detection, and fuzzing process optimization across various fuzzer types.",
   "url": "https://localhost",
   "provider": {
     "organization": "Agentic Fuzzing",
@@ -33,7 +33,7 @@
         "security-testing"
       ],
       "examples": [
-        "Perform fuzzing on {fuzz_target} (source harness at {harness_path})"
+        "Perform fuzzing on {fuzz_target} from source harness at {harness_path}"
       ],
       "outputModes": [
         "text/plain"

@@ -1,5 +1,5 @@
 {
-  "name": "SeedGeneratorAgent",
+  "name": "Seed Generator Agent",
   "description": "Expert agent for intelligent fuzzing seed acquisition: locate, download, and install high-quality fuzzing seed corpora for the target project",
   "url": "https://localhost",
   "provider": {

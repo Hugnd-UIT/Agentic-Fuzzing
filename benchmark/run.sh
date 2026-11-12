@@ -29,15 +29,13 @@ declare -A TARGET_REPOS=(
     [opencv]=https://github.com/opencv/opencv.git
 
     # Agentic fuzzing
-    [simdjson]=https://github.com/simdjson/simdjson.git
-    [bzip3]=https://github.com/kspalaiologos/bzip3.git
-    [mpack]=https://github.com/ludocode/mpack.git
     [libucl]=https://github.com/vstakhov/libucl.git
     [libmobi]=https://github.com/bfabiszewski/libmobi.git
     [libxls]=https://github.com/libxls/libxls.git
     [djvulibre]=https://git.code.sf.net/p/djvu/djvulibre-git
     [libmspack]=https://github.com/kyz/libmspack.git
     [libde265]=https://github.com/strukturag/libde265.git
+    [libsixel]=https://github.com/saitoha/libsixel.git
 )
 
 if [[ -t 1 && -z "${NO_COLOR+x}" && "${TERM:-}" != "dumb" ]]; then

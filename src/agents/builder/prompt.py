@@ -75,6 +75,7 @@ You are expected to encounter errors. When errors occur, you should analyze the 
 ## 4. ASAN Link Error
 - **Cause**: AddressSanitizer is not compatible with the `-Wl,-z,defs` flag and will cause undefined symbol errors. For the projects enabled `-Wl,-z,defs` flag as default, they provide custom cmake flags to avoid the undefined symbol error, such as `-DSANITIZE=address` in libaom. You can add the custom cmake flags to the build script as the below example shows.
 - **Fix Strategy**: Add the custom cmake flags to the build script as the below example shows.
+
 ```bash
 # Add -DSANITIZE cmake flag to avoid the undefined symbol error.
 extra_cmake_flags=""

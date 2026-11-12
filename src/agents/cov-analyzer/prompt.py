@@ -65,6 +65,7 @@ You must follow this logic flow to decide which Phase to execute:
 Before your exit, you must call the `cov_report` function to record the coverage analysis report. The recommendation must use the format below.
 
 **Example of Valid Output:**
+
 ```
 Thought: I found that the cJSON module has high uncovered complexity. specifically, the Array manipulation functions are untouched. I have identified a dependency chain starting with CreateArray and ending with Delete.
 Action: delegate_to: "HarnessAgent" 

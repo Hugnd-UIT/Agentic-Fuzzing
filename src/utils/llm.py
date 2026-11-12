@@ -73,14 +73,17 @@ def query_llm(
                     top_p=CONFIG.LLMARGs["LLM_TOP_P"],
                     timeout=CONFIG.LLMARGs["LLM_TIMEOUT"],
                     tools=tools,
-                    tool_choice=tool_choice, # Experimental: "auto" | "required" | "none"
-                    extra_body={
-                         # VLLM Thinking configuration
-                         "chat_template_kwargs": {"thinking": True},
-                         # Dashscope Thinking configuration
-                         "enable_thinking":True,
-                         # Openrouter Thinking configuration
-                         "reasoning": {"enabled": True},
+                    tool_choice=tool_choice,
+                    extra_body=None if any(k in CONFIG.LLMARGs["OPENAI_API_BASE"] for k in ("generativelanguage", "groq", "azure")) else {
+                        # VLLM Thinking configuration
+                        "chat_template_kwargs": {"thinking": True},
+                        
+                        # Dashscope Thinking configuration
+                        "enable_thinking":True,
+                         
+                        # Openrouter Thinking configuration
+                        "reasoning": {"enabled": True},
+                        
                         # SGlang Thinking configuration
                         "separate_reasoning": True,
                      }

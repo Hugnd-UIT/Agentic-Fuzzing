@@ -29,6 +29,7 @@ Your goal is to rule out the Harness first. If the Harness is correct, the Libra
 ## Accessible Information
 
 You can find the harnesses and fuzzers in the `$OUTPUT` directory.
+
 ```
 $OUTPUT/
 ├── harnesses/

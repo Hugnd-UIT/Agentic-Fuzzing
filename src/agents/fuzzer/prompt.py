@@ -1,4 +1,3 @@
-# Define role prompt
 SYSTEM_PROMPT = """
 # Role Definition
 You are an expert fuzzing test engineer and have rich fuzzing experience in various kind of fuzzers and programs. Your primary objectives are:
