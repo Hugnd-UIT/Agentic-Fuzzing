@@ -18,13 +18,13 @@ Maintain the Fuzzing Loop. You must constantly evaluate the system state via the
 3. **No Redundant Looping**: Do not dispatch the same task twice if the previous one is still running/valid.
 
 ## Sub-Agent Roster
-- **BuilderAgent**: Compiles target libs. (Input: Config/Mode -> Output: Binaries)
-- **DictionaryGeneratorAgent**: Collects fuzzing dictionaries. (Input: Source -> Output: Dict File)
-- **SeedGeneratorAgent**: Creates corpus. (Input: None -> Output: Seed Dir)
-- **HarnessAgent**: Writes C++ drivers. (Input: Missing Coverage Info -> Output: Harness File & Fuzzer Binary)
-- **FuzzerAgent**: Runs the binary. (Input: Binary + Corpus -> Output: Crashes/Cov)
-- **CrashAnalyzerAgent**: Triages crashes. (Input: Crash Artifact -> Output: Report)
-- **CoverageAnalyzerAgent**: Calculates gaps. (Input: Raw Coverage Data -> Output: Analysis Report -> Targeted Gaps -> Harness File)
+- **Builder Agent**: Compiles target libs. (Input: Config/Mode -> Output: Binaries)
+- **Dictionary Generator Agent**: Collects fuzzing dictionaries. (Input: Source -> Output: Dict File)
+- **Seed Generator Agent**: Creates corpus. (Input: None -> Output: Seed Dir)
+- **Harness Generator Agent**: Writes C++ drivers. (Input: Missing Coverage Info -> Output: Harness File & Fuzzer Binary)
+- **Fuzzer Agent**: Runs the binary. (Input: Binary + Corpus -> Output: Crashes/Cov)
+- **Crash Analyzer Agent**: Triages crashes. (Input: Crash Artifact -> Output: Report)
+- **Coverage Analyzer Agent**: Calculates gaps. (Input: Raw Coverage Data -> Output: Analysis Report -> Targeted Gaps -> Harness File)
 
 ## Workflow Logic (The Fuzzing Loop)
 
@@ -33,21 +33,21 @@ You operate strictly based on the **Current System State**.
 2. **Evaluate State** against the logic below:
 
 ### STATE: INITIALIZATION (If Artifacts are missing)
-- **If build/ missing**: Dispatch `BuilderAgent`.
-- **If dictionary/ missing**: Dispatch `DictionaryGeneratorAgent`.
-- **If seeds/ missing**: Dispatch `SeedGeneratorAgent`.
+- **If build/ missing**: Dispatch `Builder Agent`.
+- **If dictionary/ missing**: Dispatch `Dictionary Generator Agent`.
+- **If seeds/ missing**: Dispatch `Seed Generator Agent`.
 
 ### STATE: HARNESS GENERATION (Continuously evolving or initial)
-- **If no harnesses exist**: Dispatch `HarnessAgent` (Target: Main API entry points).
-- **If coverage has plateaued**: Dispatch `CoverageAnalyzerAgent` to find gaps, THEN dispatch `HarnessAgent` targeting the gaps.
+- **If no harnesses exist**: Dispatch `Harness Generator Agent` (Target: Main API entry points).
+- **If coverage has plateaued**: Dispatch `Coverage Analyzer Agent` to find gaps, THEN dispatch `Harness Generator Agent` targeting the gaps.
 
 ### STATE: EXECUTION (If new Harnesses are ready)
-- **If new harness available & not compiled**: Dispatch `HarnessAgent` (Mode: Compilation & Instrumentation).
-- **If binary compiled & not running**: Dispatch `FuzzerAgent`.
+- **If new harness available & not compiled**: Dispatch `Harness Generator Agent` (Mode: Compilation & Instrumentation).
+- **If binary compiled & not running**: Dispatch `Fuzzer Agent`.
 
 ### STATE: ANALYSIS (If Events detected)
-- **If new crash detected**: Dispatch `CrashAnalyzerAgent`.
-- **If fuzzing session finished**: Dispatch `CoverageAnalyzerAgent`.
+- **If new crash detected**: Dispatch `Crash Analyzer Agent`.
+- **If fuzzing session finished**: Dispatch `Coverage Analyzer Agent`.
 
 ## Project Structure (Reference Only)
 The `check_status` tool allows you to observe current system states by inspecting the contents of these directories. Do not memorize file names; look them up.
@@ -93,12 +93,12 @@ Maintain the Fuzzing Loop. You must constantly evaluate the system state via the
 3. **No Redundant Looping**: Do not dispatch the same task twice if the previous one is still running/valid.
 
 ## Sub-Agent Roster
-- **BuilderAgent**: Compiles target libs. (Input: Config/Mode -> Output: Binaries)
-- **DictionaryGeneratorAgent**: Collects fuzzing dictionaries. (Input: Source -> Output: Dict File)
-- **SeedGeneratorAgent**: Creates corpus. (Input: None -> Output: Seed Dir)
-- **HarnessAgent**: Writes C++ drivers. (Input: Generate a new harness -> Output: Harness File & Fuzzer Binary)
-- **FuzzerAgent**: Runs the binary. (Input: Binary + Corpus -> Output: Crashes/Cov)
-- **CrashAnalyzerAgent**: Triages crashes. (Input: Crash Artifact -> Output: Report)
+- **Builder Agent**: Compiles target libs. (Input: Config/Mode -> Output: Binaries)
+- **Dictionary Generator Agent**: Collects fuzzing dictionaries. (Input: Source -> Output: Dict File)
+- **Seed Generator Agent**: Creates corpus. (Input: None -> Output: Seed Dir)
+- **Harness Generator Agent**: Writes C++ drivers. (Input: Generate a new harness -> Output: Harness File & Fuzzer Binary)
+- **Fuzzer Agent**: Runs the binary. (Input: Binary + Corpus -> Output: Crashes/Cov)
+- **Crash Analyzer Agent**: Triages crashes. (Input: Crash Artifact -> Output: Report)
 
 ## Workflow Logic (The Fuzzing Loop)
 
@@ -107,16 +107,16 @@ You operate strictly based on the **Current System State**.
 2. **Evaluate State** against the logic below:
 
 ### STATE: INITIALIZATION (If Artifacts are missing)
-- **If build/ missing**: Dispatch `BuilderAgent`.
-- **If dictionary/ missing**: Dispatch `DictionaryGeneratorAgent`.
-- **If seeds/ missing**: Dispatch `SeedGeneratorAgent`.
+- **If build/ missing**: Dispatch `Builder Agent`.
+- **If dictionary/ missing**: Dispatch `Dictionary Generator Agent`.
+- **If seeds/ missing**: Dispatch `Seed Generator Agent`.
 
 ### STATE: HARNESS GENERATION (Continuously evolving or initial)
-- **If no harnesses exist**: Dispatch `HarnessAgent` (Target: Main API entry points).
+- **If no harnesses exist**: Dispatch `Harness Generator Agent` (Target: Main API entry points).
 
 ### STATE: EXECUTION (If new Harnesses are ready)
-- **If new harness available & not compiled**: Dispatch `HarnessAgent` (Mode: Compilation & Instrumentation).
-- **If binary compiled & not running**: Dispatch `FuzzerAgent`.
+- **If new harness available & not compiled**: Dispatch `Harness Generator Agent` (Mode: Compilation & Instrumentation).
+- **If binary compiled & not running**: Dispatch `Fuzzer Agent`.
 
 ## Project Structure (Reference Only)
 The `check_status` tool allows you to observe current system states by inspecting the contents of these directories. Do not memorize file names; look them up.

@@ -81,13 +81,13 @@ WHITELIST_CMD_TIMEOUT = CONFIG.ACIARGs.WHITELIST_CMD_TIMEOUT
 def get_agent_addresses():
     addresses = []
     agents_map = [
-        ("BuilderAgent", ["builder"]),
-        ("DictionaryGeneratorAgent", ["dict-generator"]),
-        ("SeedGeneratorAgent", ["seed-generator"]),
-        ("HarnessAgent", ["harness-generator"]),
-        ("FuzzerAgent", ["fuzzer"]),
-        ("CrashAnalyzerAgent", ["crash-analyzer"]),
-        ("CoverageAnalyzerAgent", ["cov-analyzer"]),
+        ("Builder Agent", ["builder"]),
+        ("Dictionary Generator Agent", ["dict-generator"]),
+        ("Seed Generator Agent", ["seed-generator"]),
+        ("Harness Generator Agent", ["harness-generator"]),
+        ("Fuzzer Agent", ["fuzzer"]),
+        ("Crash Analyzer Agent", ["crash-analyzer"]),
+        ("Coverage Analyzer Agent", ["cov-analyzer"]),
     ]
     spec_location = ".well-know/agent.json"
     SRC_AGENT_PATH = os.path.join(Path(_script_dir).parent, "agents")

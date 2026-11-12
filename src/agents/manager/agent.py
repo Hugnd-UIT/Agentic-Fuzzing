@@ -56,23 +56,15 @@ class ManagerAgent(BaseAgent):
         cov_analyzer = CoverageAnalyzerAgent()
 
         self.class_map = {
-            "BuilderAgent": builder,
             "Builder Agent": builder,
-            "HarnessAgent": harness,
-            "Harness Agent": harness,
-            "FuzzerAgent": fuzzer,
+            "Harness Generator Agent": harness,
             "Fuzzer Agent": fuzzer,
-            "CrashAnalyzerAgent": crash_analyzer,
             "Crash Analyzer Agent": crash_analyzer,
-            "DictionaryGeneratorAgent": dict_gen,
             "Dictionary Generator Agent": dict_gen,
-            "SeedGeneratorAgent": seed_gen,
             "Seed Generator Agent": seed_gen,
-            "CoverageAnalyzerAgent": cov_analyzer,
             "Coverage Analyzer Agent": cov_analyzer,
         }
         if CONFIG.ACIARGs.DISABLE_COVERAGE_GUIDANCE:
-            self.class_map.pop("CoverageAnalyzerAgent", None)
             self.class_map.pop("Coverage Analyzer Agent", None)
             self.agents = [agent for agent in self.agents if self._normalize_name(agent.name) != "coverageanalyzeragent"]
             
