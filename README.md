@@ -20,6 +20,8 @@
 </p>
 
 <p align="center">
+  <a href="#introduction"><strong>Introduction</strong></a> ·
+  <a href="#architecture"><strong>Architecture</strong></a> ·
   <a href="#quick-start"><strong>Quick Start</strong></a> ·
   <a href="#benchmarks"><strong>Benchmarks</strong></a> ·
   <a href="#results"><strong>Results</strong></a> ·
@@ -36,9 +38,20 @@
 </p>
 <br clear="left"/>
 
+## Architecture
+
 <p align="center">
   <img src="docs/assets/overview.png" alt="Arasaka architecture" width="1000">
 </p>
+
+* **Manager**: Coordinates the entire campaign lifecycle, monitors real-time fuzzing metrics, detects bottlenecks, and dispatches specialized sub-agents.
+* **Builder**: Automatically configures build systems, resolves dependencies, and compiles targets with sanitizers and coverage instrumentation.
+* **Fuzzer**: Orchestrates multi-core AFL++ fuzzing instances and manages real-time corpus synchronization.
+* **Dictionary generator**: Extracts domain-specific tokens, syntax rules, and magic bytes from source code and specifications to accelerate fuzzing mutations.
+* **Seed generator**: Acquires, synthesizes, and minimizes high-quality initial seed corpora from unit tests and repositories to kickstart exploration.
+* **Harness generator**: Generates robust, compilation-ready C/C++ fuzz drivers for targeted API entry points and automatically repairs broken harnesses.
+* **Coverage analyzer**: Evaluates function, line, and branch coverage metrics, diagnoses coverage plateaus, and identifies untapped execution paths.
+* **Crash analyzer**: Triages crashes, reproduces issues with AddressSanitizer/UBSan, deduplicates stack traces, and analyzes root causes to produce actionable reports.
 
 ## Quick Start
 
@@ -80,7 +93,7 @@ The launcher prepares the source checkout and starts `arasaka-cjson` in the back
 
 Choose a library below and use its **Target ID** with `./benchmark/run.sh <target>`. Library names link to their source repositories.
 
-The launcher caches checkouts in `.cache/targets/<target>` and saves results in `output/<target>`. It currently clones each repository's default branch; the paper's evaluation uses the specific revisions listed in Table I.
+The launcher caches checkouts in `.cache/targets/<target>` and saves results in `output/<target>`. It currently clones each repository's default branch. Below is the list of supported benchmark libraries:
 
 | Library | Focus | Target ID |
 | :--- | :--- | :--- |
@@ -94,6 +107,7 @@ The launcher caches checkouts in `.cache/targets/<target>` and saves results in 
 | [libpcap](https://github.com/the-tcpdump-group/libpcap) | Network packet capture | `libpcap` |
 | [libpng](https://github.com/pnggroup/libpng) | PNG encoding and decoding | `libpng` |
 | [libtiff](https://github.com/libsdl-org/libtiff) | TIFF image processing | `libtiff` |
+| [libuv](https://github.com/libuv/libuv) | Multi-platform asynchronous I/O | `libuv` |
 | [libvpx](https://chromium.googlesource.com/webm/libvpx) | VP8 and VP9 video encoding and decoding | `libvpx` |
 | [Little CMS](https://github.com/mm2/Little-CMS) | Color management | `lcms` |
 | [OpenCV](https://github.com/opencv/opencv) | Computer vision and image processing | `opencv` |

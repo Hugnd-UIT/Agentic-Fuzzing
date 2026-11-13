@@ -6,7 +6,6 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET="${1:-}"
 
 declare -A TARGET_REPOS=(
-    # FuzzAgent
     [cjson]=https://github.com/DaveGamble/cJSON.git
     [libmagic]=https://github.com/file/file.git
     [re2]=https://github.com/google/re2.git
@@ -27,8 +26,6 @@ declare -A TARGET_REPOS=(
     [openssl]=https://github.com/openssl/openssl.git
     [protobuf]=https://github.com/protocolbuffers/protobuf.git
     [opencv]=https://github.com/opencv/opencv.git
-
-    # Arasaka
     [libucl]=https://github.com/vstakhov/libucl.git
     [libmobi]=https://github.com/bfabiszewski/libmobi.git
     [libxls]=https://github.com/libxls/libxls.git
